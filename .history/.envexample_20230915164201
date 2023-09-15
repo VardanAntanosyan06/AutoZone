@@ -1,0 +1,4 @@
+JWT_SECRET='JWT_SECRET'
+MPC_USER='test@gmail.com'
+MPC_USER_PASSWORD="test1234"
+HOST="http://localhost:3000/"
