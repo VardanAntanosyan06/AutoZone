@@ -133,10 +133,75 @@ const options = {
  *                   example: "jwt_token"
  *       403:
  *         description: Phone number or PIN cannot be empty or Wrong phoneNumber
+ /**
+ * @swagger
+ * /api/v1/users/register:
+ *   post:
+ *     summary: Registration User
+ *     description: Register a new user.
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phoneNumber
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "37499999999"
+ *     responses:
+ *       200:
+ *         description: Success
+ *       403:
+ *         description: Maximum daily message limit exceeded.
+ *       400:
+ *         description: Bad request - Invalid input data.
+ *
+ *   patch:
+ *     summary: Update User Phone Number or PIN
+ *     description: Update a user's phone number or PIN.
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "37499755073"
+ *               pin:
+ *                 type: string
+ *                 example: "10000"
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 token:
+ *                   type: string
+ *                   example: "your_jwt_token_here"
+ *       403:
+ *         description: Phone number or PIN cannot be empty or Wrong phoneNumber!
+ *
  * /api/v1/users/login:
  *   get:
  *     summary: User Login
  *     description: Log in using phone number and PIN or user token.
+ *     tags:
+ *       - Users
  *     parameters:
  *       - in: query
  *         name: phoneNumber
@@ -152,13 +217,6 @@ const options = {
  *           type: string
  *         example: "10000"
  *         description: The user's PIN code.
- *       - in: query
- *         name: token
- *         required: false
- *         schema:
- *           type: string
- *         example: "your_jwt_token_here"
- *         description: The user's JWT token.
  *     responses:
  *       200:
  *         description: Success
@@ -172,10 +230,13 @@ const options = {
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "User's data"
+ *                   example: "Login successful."
  *       403:
- *         description: Token timeout - please enter the PIN code.
+ *         description: Token timeout - please enter the PIN code (403), phone number or pin cannot be empty, or user's data.
+ *     security:
+ *       - bearerAuth: []
  */
+
 
 
 const swaggerSpec = swaggerJSDOC(options);

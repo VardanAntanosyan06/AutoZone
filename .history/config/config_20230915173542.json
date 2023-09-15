@@ -2,11 +2,11 @@
   "development": {
     "username": "postgres",
     "password": "vv",
-    "database": "AutoZone",
+    "database": " ",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
-  "test": {   
+  "test": {
     "username": "root",
     "password": null,
     "database": "database_test",

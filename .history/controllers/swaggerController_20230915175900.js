@@ -172,9 +172,9 @@ const options = {
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "User's data"
+ *                   example: "Login successful."
  *       403:
- *         description: Token timeout - please enter the PIN code.
+ *         description: Token timeout - please enter the PIN code (403), phone number or pin cannot be empty, or user's data.
  */
 
 
