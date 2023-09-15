@@ -9,7 +9,7 @@ const options = {
     },
     servers: [
       {
-        url: process.env.HOST,
+        url: process.e,
       },
     ],
   },
