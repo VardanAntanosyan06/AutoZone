@@ -68,16 +68,20 @@ const Verification = async (req, res) => {
         phoneNumber,
       },
     });
+    console.log(
+      verificationCode,
+      bcrypt.compareSync(verificationCode, User.pin)
+    );
     if (User && bcrypt.compareSync(verificationCode, User.pin)){
       User.isVerified = true;
 
       await User.save()
-      return res.json({ success: true,message:"User Verified!"}); 
+      return res.json({ success: true }); 
     }
 
     return res
       .status(403)
-      .json({ success:false,message: "Wrong verificationCode or phoneNumber!" });
+      .json({ message: "Wrong verificationCode or phoneNumber!" });
   } catch (error) {
     console.log(error);
   }
@@ -106,15 +110,12 @@ const CreateOrUpdatePin = async (req, res) => {
     .json({ message: "Wrong phoneNumber!" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message:"Something went wrong."})
   }
 };
 
 const Login = async (req,res)=>{
   try {
-    let {pin,phoneNumber} = req.body;
-    pin = pin.toString()
-    phoneNumber = phoneNumber.toString()
+    const {pin,phoneNumber} = req.body;
     let { authorization: token } = req.headers;
     if(token){  
       const id = jwt.verify(token = token.replace("Bearer ", ""), process.env.JWT_SECRET).user_id;
@@ -143,15 +144,11 @@ const Login = async (req,res)=>{
 }
 
 
-const deleteUserForTesting = async (req,res)=>{
+const deleteUser = async (req,res)=>{
   try {
-    const {phoneNumber} = req.params;
+    const {phoneNumber} = req.query;
 
-    const status = await Users.destroy({
-      where:{phoneNumber}
-    })
-    if(status===1) return res.status(200).json({success:true,message:"The user was deleted successfully."})
-    return res.status(404).json({success:false,message:"User not found!."})
+    await Users.
   } catch (error) {
     console.log(error);
     return res.status(500).json({message:"Something went wrong."})
@@ -161,6 +158,5 @@ module.exports = {
   LoginOrRegister,
   Verification,
   CreateOrUpdatePin,
-  Login,
-  deleteUserForTesting
+  Login
 };

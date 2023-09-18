@@ -112,7 +112,7 @@ const CreateOrUpdatePin = async (req, res) => {
 
 const Login = async (req,res)=>{
   try {
-    let {pin,phoneNumber} = req.body;
+    const {pin,phoneNumber} = req.body;
     pin = pin.toString()
     phoneNumber = phoneNumber.toString()
     let { authorization: token } = req.headers;
@@ -136,7 +136,6 @@ const Login = async (req,res)=>{
     if (error.name == "JsonWebTokenError") {
       return res.status(403).json({ message:"Token timeout: please enter the pin code" });
     } else {
-      console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
   }
@@ -145,7 +144,7 @@ const Login = async (req,res)=>{
 
 const deleteUserForTesting = async (req,res)=>{
   try {
-    const {phoneNumber} = req.params;
+    const {phoneNumber} = req.query;
 
     const status = await Users.destroy({
       where:{phoneNumber}

@@ -5,8 +5,8 @@ const controller = require("../controllers/UserController")
 router.post("/register",controller.LoginOrRegister)
 router.get("/verification",controller.Verification)
 router.patch("/createOrUpdatePin",controller.CreateOrUpdatePin)
-router.post("/login",controller.Login)
-router.delete("/deleteUserForTesting/:phoneNumber",controller.deleteUserForTesting)
+router.get("/login",controller.Login)
+router.get("/login",controller.Login)
 
 
 module.exports = router;

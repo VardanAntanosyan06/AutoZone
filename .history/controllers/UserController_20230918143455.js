@@ -112,9 +112,7 @@ const CreateOrUpdatePin = async (req, res) => {
 
 const Login = async (req,res)=>{
   try {
-    let {pin,phoneNumber} = req.body;
-    pin = pin.toString()
-    phoneNumber = phoneNumber.toString()
+    const {pin,phoneNumber} = req.body;
     let { authorization: token } = req.headers;
     if(token){  
       const id = jwt.verify(token = token.replace("Bearer ", ""), process.env.JWT_SECRET).user_id;
@@ -145,7 +143,7 @@ const Login = async (req,res)=>{
 
 const deleteUserForTesting = async (req,res)=>{
   try {
-    const {phoneNumber} = req.params;
+    const {phoneNumber} = req.query;
 
     const status = await Users.destroy({
       where:{phoneNumber}

@@ -169,10 +169,12 @@ const options = {
  *                   example: "User's data"
  *       403:
  *         description: Token timeout - please enter the PIN code.
- * /api/v1/users/deleteUserForTesting/{phoneNumber}:
+ *  * /api/v1/users/{phoneNumber}:
  *   delete:
  *     summary: Delete User by Phone Number
  *     description: Delete a user by their phone number.
+ *     tags:
+ *       - Users
  *     parameters:
  *       - in: path
  *         name: phoneNumber
@@ -185,6 +187,7 @@ const options = {
  *         description: User deleted successfully.
  *       404:
  *         description: User not found.
+ */
  */
 
 

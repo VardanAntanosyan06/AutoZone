@@ -173,6 +173,8 @@ const options = {
  *   delete:
  *     summary: Delete User by Phone Number
  *     description: Delete a user by their phone number.
+ *     tags:
+ *       - Users
  *     parameters:
  *       - in: path
  *         name: phoneNumber

@@ -145,7 +145,7 @@ const Login = async (req,res)=>{
 
 const deleteUserForTesting = async (req,res)=>{
   try {
-    const {phoneNumber} = req.params;
+    const {phoneNumber} = req.query;
 
     const status = await Users.destroy({
       where:{phoneNumber}

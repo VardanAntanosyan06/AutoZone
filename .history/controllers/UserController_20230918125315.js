@@ -18,7 +18,7 @@ const LoginOrRegister = async (req, res) => {
       User.messageSendCount = 0;
     }
 
-    if (User && User.isVerified) return res.status(200).json({ success:true, message: "Enter pin code." });
+    if (User && User.isVerified) return res.status(200).json({ message: "Enter pin code." });
 
     const code = Math.floor(Math.random() * 8999 + 1000);
     const hashPin = bcrypt.hashSync(code.toString(), 10);
@@ -46,13 +46,13 @@ const LoginOrRegister = async (req, res) => {
       "Verify your account",
       `Verification code is ${code}`
       ); 
-      return res.json({ success: true,message: "The verification code was sent successfully." });
+      return res.json({ success: true });
     }
     return res.status(403).json({message:" Maximum daily message limit exceeded."})
     } catch (error) {
       console.log(error);
       if (error.name == "SequelizeValidationError") {
-        return res.status(403).json({ success:false,message: error.message });
+        return res.status(403).json({ message: error.message });
       } else {
       return res.status(500).json({ message: "Something went wrong." });
     }
@@ -68,16 +68,20 @@ const Verification = async (req, res) => {
         phoneNumber,
       },
     });
+    console.log(
+      verificationCode,
+      bcrypt.compareSync(verificationCode, User.pin)
+    );
     if (User && bcrypt.compareSync(verificationCode, User.pin)){
       User.isVerified = true;
 
       await User.save()
-      return res.json({ success: true,message:"User Verified!"}); 
+      return res.json({ success: true }); 
     }
 
     return res
       .status(403)
-      .json({ success:false,message: "Wrong verificationCode or phoneNumber!" });
+      .json({ message: "Wrong verificationCode or phoneNumber!" });
   } catch (error) {
     console.log(error);
   }
@@ -106,15 +110,12 @@ const CreateOrUpdatePin = async (req, res) => {
     .json({ message: "Wrong phoneNumber!" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message:"Something went wrong."})
   }
 };
 
 const Login = async (req,res)=>{
   try {
-    let {pin,phoneNumber} = req.body;
-    pin = pin.toString()
-    phoneNumber = phoneNumber.toString()
+    const {pin,phoneNumber} = req.query;
     let { authorization: token } = req.headers;
     if(token){  
       const id = jwt.verify(token = token.replace("Bearer ", ""), process.env.JWT_SECRET).user_id;
@@ -143,24 +144,17 @@ const Login = async (req,res)=>{
 }
 
 
-const deleteUserForTesting = async (req,res)=>{
+const deleteUser = async (req,res)=>{
   try {
-    const {phoneNumber} = req.params;
-
-    const status = await Users.destroy({
-      where:{phoneNumber}
-    })
-    if(status===1) return res.status(200).json({success:true,message:"The user was deleted successfully."})
-    return res.status(404).json({success:false,message:"User not found!."})
+    
   } catch (error) {
     console.log(error);
-    return res.status(500).json({message:"Something went wrong."})
+    return res.statsu().json
   }
 } 
 module.exports = {
   LoginOrRegister,
   Verification,
   CreateOrUpdatePin,
-  Login,
-  deleteUserForTesting
+  Login
 };

@@ -137,22 +137,28 @@ const options = {
  *   post:
  *     summary: User Login
  *     description: Log in using phone number and PIN or user token.
-*     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - phoneNumber
- *               - pin 
- *             properties:
- *               phoneNumber:
- *                 type: string
- *                 example: "37499999999"
- *               pin:
- *                 type: string
- *                 example: "1111"
+ *     parameters:
+ *       - in: query
+ *         name: phoneNumber
+ *         required: false
+ *         schema:
+ *           type: string
+ *         example: "37499999999"
+ *         description: The user's phone number.
+ *       - in: query
+ *         name: pin
+ *         required: false
+ *         schema:
+ *           type: string
+ *         example: "10000"
+ *         description: The user's PIN code.
+ *       - in: query
+ *         name: token
+ *         required: false
+ *         schema:
+ *           type: string
+ *         example: "your_jwt_token_here"
+ *         description: The user's JWT token.
  *     responses:
  *       200:
  *         description: Success
@@ -169,22 +175,6 @@ const options = {
  *                   example: "User's data"
  *       403:
  *         description: Token timeout - please enter the PIN code.
- * /api/v1/users/deleteUserForTesting/{phoneNumber}:
- *   delete:
- *     summary: Delete User by Phone Number
- *     description: Delete a user by their phone number.
- *     parameters:
- *       - in: path
- *         name: phoneNumber
- *         required: true
- *         schema:
- *           type: string
- *         description: The phone number of the user to be deleted.
- *     responses:
- *       200:
- *         description: User deleted successfully.
- *       404:
- *         description: User not found.
  */
 
 
