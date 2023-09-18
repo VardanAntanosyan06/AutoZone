@@ -33,7 +33,7 @@ const LoginOrRegister = async (req, res) => {
       User.messageSendCount = User.messageSendCount+1;
       User.messageSendTime = moment() 
       await User.save()
-      return res.json({ success: true,message: "The verification code was sent successfully." });
+      return       return res.json({ success: true,message: "The verification code was sent successfully." });
 
     }else if(!User){
     await Users.create({
