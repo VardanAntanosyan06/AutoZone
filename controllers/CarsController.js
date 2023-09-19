@@ -1,19 +1,26 @@
+const { ARRAY } = require("sequelize");
 const { Users } = require("../models");
 const { Cars } = require("../models");
 const fetch = require("node-fetch");
+
 const Searchcar = async (req, res) => {
   try {
     const { techNumber, phoneNumber } = req.body;
 
     const User = await Users.findOne({ where: { phoneNumber } });
-    const Car = await Cars.findOne({ where: { carTechNumber:techNumber } });
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
-    if(Car) return res.status(403).json({success:false,message:"Another user already aded the car."})
+    if (Car)
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Another user already aded the car.",
+        });
     if (!User)
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
-
 
     const carDataResponse = await fetch(
       "https://api.onepay.am/autoclub/payment-service/select-vehicle",
@@ -36,13 +43,15 @@ const Searchcar = async (req, res) => {
     if (!carDataResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
-    
+
     const carData = await carDataResponse.json();
-    console.log( );
+    console.log();
     User.fullName = carData.full_name;
 
     await User.save();
-
+    if (!Array.isArray(carData.vehicle_types)) {
+      carData.vehicle_types = Object.values(carData.vehicle_types);
+    }
     await Cars.create({
       carTechNumber: techNumber,
       userId: User.id,
@@ -50,37 +59,60 @@ const Searchcar = async (req, res) => {
       carMark: carData.car,
       serviceRequestId: carData.service_request_id,
       vehicleTypeHy: carData.vehicle_type,
-      vehicleTypeEn: Array.isArray(carData.vehicle_types) ? carData.vehicle_types[0].id : "passenger",
+      vehicleTypeEn: carData.vehicle_types[0].id,
     });
 
-    return res.status(200).json({ success:true,carData });
+    return res.status(200).json({ success: true, carData });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success:false,message: "Something went wrong." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
   }
 };
 
-
-const DeleteCar = async (req,res)=>{
+const DeleteCar = async (req, res) => {
   try {
     const { techNumber } = req.params;
 
     const status = await Cars.destroy({
-      where: { carTechNumber:techNumber } 
+      where: { carTechNumber: techNumber },
     });
     if (status === 1)
       return res
         .status(200)
         .json({ success: true, message: "The Car was deleted successfully." });
-    return res
-      .status(404)
-      .json({ success: false, message: "Car not found!." });
+    return res.status(404).json({ success: false, message: "Car not found!." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
-} 
+};
+
+const UpdateCarVehicleType = async (req, res) => {
+  try {
+    const { name, id, techNumber } = req.body;
+    console.log(techNumber);
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
+    console.log(Car);
+    if (!Car)
+      return res
+        .status(404)
+        .json({ success: false, message: "Car not found!" });
+
+    Car.vehicleTypeHy = name;
+    Car.vehicleTypeEn = id;
+
+    await Car.save();
+    return res.status(200).json({ success: true, message: "The Car was updated successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+};
+
 module.exports = {
   Searchcar,
-  DeleteCar
+  DeleteCar,
+  UpdateCarVehicleType
 };
