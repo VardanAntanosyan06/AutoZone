@@ -215,7 +215,7 @@ const options = {
  *       403:
  *         description: Another user already aded the car.
  *       404:
- *         description: User not found!.
+ *         description: User not found.
  * 
  * /api/v1/users/deleteUserForTesting/{phoneNumber}:
  *   delete:
