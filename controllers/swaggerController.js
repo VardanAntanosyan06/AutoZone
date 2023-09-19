@@ -175,7 +175,11 @@ const options = {
  *                   example: "User's data"
  *       403:
  *         description: Token timeout - please enter the PIN code.
- * 
+ */
+
+
+ /** 
+ * @swagger 
  * /api/v1/cars/search:
  *   post:
  *     summary: Search Car
