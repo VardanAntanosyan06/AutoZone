@@ -23,6 +23,8 @@ const options = {
  *   post:
  *     summary: Registration User
  *     description: Register a new user.
+ *     tags:
+ *         - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -52,6 +54,8 @@ const options = {
  *     get:
  *       summary: Verify Phone Number with Verification Code
  *       description: Verify a phone number with a verification code.
+ *       tags:
+ *         - Users
  *       parameters:
  *         - in: query
  *           name: phoneNumber
@@ -102,6 +106,8 @@ const options = {
  *   patch:
  *     summary: Update User Phone Number or PIN
  *     description: Update a user's phone number or PIN.
+ *     tags:
+ *         - Users
  *     requestBody:
  *       required: false
  *       content:
@@ -135,6 +141,8 @@ const options = {
  *   post:
  *     summary: User Login
  *     description: Log in using phone number and PIN or user token.
+ *     tags:
+ *         - Users
  *     requestBody:
  *       required: true
  *       content:
@@ -176,6 +184,8 @@ const options = {
  *   post:
  *     summary: Search Car
  *     description: Search Car using tech number and user's phone number.
+ *     tags:
+ *         - Cars
  *     requestBody:
  *       required: true
  *       content:
@@ -215,6 +225,8 @@ const options = {
  *   delete:
  *     summary: Delete User by Phone Number
  *     description: Delete a user by their phone number.
+ *     tags:
+ *         - Users
  *     parameters:
  *       - in: path
  *         name: phoneNumber
@@ -232,6 +244,8 @@ const options = {
  *   delete:
  *     summary: Delete Car by tech Number
  *     description: Delete Car by their tech Number.
+ *     tags:
+ *         - Cars
  *     parameters:
  *       - in: path
  *         name: techNumber
