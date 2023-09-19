@@ -36,9 +36,9 @@ const Searchcar = async (req, res) => {
     if (!carDataResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
-
-
+    
     const carData = await carDataResponse.json();
+    console.log( );
     User.fullName = carData.full_name;
 
     await User.save();
@@ -50,7 +50,7 @@ const Searchcar = async (req, res) => {
       carMark: carData.car,
       serviceRequestId: carData.service_request_id,
       vehicleTypeHy: carData.vehicle_type,
-      vehicleTypeEn: carData.vehicle_types[0].id,
+      vehicleTypeEn: Array.isArray(carData.vehicle_types) ? carData.vehicle_types[0].id : "passenger",
     });
 
     return res.status(200).json({ success:true,carData });
