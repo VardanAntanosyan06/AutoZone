@@ -6,7 +6,7 @@ router.post("/search",controller.Searchcar)
 // router.get("/verification",controller.Verification)
 // router.patch("/createOrUpdatePin",controller.CreateOrUpdatePin)
 // router.post("/login",controller.Login)
-// router.delete("/deleteUserForTesting/:phoneNumber",controller.deleteUserForTesting)
+router.delete("/deleteCar/:techNumber",controller.DeleteCar)
 
 
 module.exports = router;

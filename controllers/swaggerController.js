@@ -175,6 +175,48 @@ const options = {
  *                   example: "User's data"
  *       403:
  *         description: Token timeout - please enter the PIN code.
+ * 
+ * /api/v1/cars/search:
+ *   post:
+ *     summary: Search Car
+ *     description: Search Car using tech number and user's phone number.
+ *     tags:
+ *         - Cars
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - techNumber
+ *               - phoneNumber 
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 example: "37499999999"
+ *               techNumber:
+ *                 type: string
+ *                 example: "HB661960"
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Car's data"
+ *       403:
+ *         description: Another user already aded the car.
+ *       404:
+ *         description: User not found!.
+ * 
  * /api/v1/users/deleteUserForTesting/{phoneNumber}:
  *   delete:
  *     summary: Delete User by Phone Number
@@ -193,6 +235,25 @@ const options = {
  *         description: User deleted successfully.
  *       404:
  *         description: User not found.
+ * 
+ * /api/v1/users/deleteCar/{techNumber}:
+ *   delete:
+ *     summary: Delete Car by tech Number
+ *     description: Delete Car by their tech Number.
+ *     tags:
+ *         - Cars
+ *     parameters:
+ *       - in: path
+ *         name: techNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The tech number of the car to be deleted.
+ *     responses:
+ *       200:
+ *         description: The Car was deleted successfully.
+ *       404:
+ *         description: Car not found.
  */
 
 
