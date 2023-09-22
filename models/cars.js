@@ -18,6 +18,9 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.INTEGER,
     carNumber: DataTypes.STRING,
     carMark: DataTypes.STRING,
+    insuranceInfo:DataTypes.STRING,
+    insuranceEndDate:DataTypes.DATE,
+    inspection:DataTypes.STRING,
     serviceRequestId: DataTypes.INTEGER,
     vehicleTypeHy: DataTypes.STRING,
     vehicleTypeEn: DataTypes.STRING
