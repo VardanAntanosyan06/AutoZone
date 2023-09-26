@@ -12,7 +12,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var carsRouter = require('./routes/cars');
 var TechPaymentRouter = require('./routes/TechPay');
-
+const getAlllocationsRouter = require("./routes/getAlllocations")
 var app = express();
 
 // view engine setup
@@ -30,6 +30,7 @@ app.use('/', indexRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/cars', carsRouter);
 app.use('/api/v1/techPayment', TechPaymentRouter);
+app.use('/api/v1/',getAlllocationsRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require("./controllers/swaggerController").swaggerSpec));
 
 

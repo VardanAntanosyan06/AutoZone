@@ -161,7 +161,7 @@ const CreateOrUpdatePin = async (req, res) => {
 const Login = async (req, res) => {
   try {
     let { pin, phoneNumber } = req.body;
-
+    
     pin = pin.toString();
     phoneNumber = phoneNumber.toString();
     let { authorization: token } = req.headers;

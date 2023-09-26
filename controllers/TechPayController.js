@@ -17,7 +17,6 @@ const GetStatons = async (req, res) => {
     stations = await stations.json();
 
     stations = stations.map((e)=>{
-      console.log(e.location.parent.translations.hy.name);
     e.data = e.translations.hy
     e.location.name = e.location.translations.hy.name;
     e.location.parent = e.location.parent.translations.hy.name
