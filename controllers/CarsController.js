@@ -30,7 +30,7 @@ const SearchCar = async (req, res) => {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization:
-            "Y3rFG3iEZUVhbn7v6sJOzovrkZkvIZHYb9Kb7LnYqCW0Ne5pVsqPt3NdLvGiDQPp",
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
           userID: User.id,
@@ -83,7 +83,7 @@ const AddCar = async(req,res)=>{
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization:
-            "Y3rFG3iEZUVhbn7v6sJOzovrkZkvIZHYb9Kb7LnYqCW0Ne5pVsqPt3NdLvGiDQPp",
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
           userID: User.id,
