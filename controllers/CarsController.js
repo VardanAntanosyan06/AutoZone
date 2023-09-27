@@ -8,14 +8,9 @@ const SearchCar = async (req, res) => {
     let { techNumber, phoneNumber } = req.body;
 
     const User = await Users.findOne({ where: { phoneNumber } });
-    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
     phoneNumber = phoneNumber.replace(/374/g, "0");
-    if (Car)
-      return res.status(403).json({
-        success: false,
-        message: "Another user already aded the car.",
-      });
+
     if (!User)
       return res
         .status(404)
