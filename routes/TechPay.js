@@ -4,11 +4,10 @@ const controller = require("../controllers/TechPayController")
 
 router.post("/getStations",controller.GetStatons)
 router.post("/getServicesForPay",controller.GetServicesForPay)
-
-// router.post("/addCar",controller.AddCar)
+router.post("/getPaymentURL",controller.GetPaymentURL)
+router.get("/getOrders/:id",controller.GetOrders)
 // router.patch("/updateCarVehicleType",controller.UpdateCarVehicleType)
 // router.delete("/deleteCar/:techNumber",controller.DeleteCar)
-// router.get("/verification",controller.Verification)
 
 
 module.exports = router;

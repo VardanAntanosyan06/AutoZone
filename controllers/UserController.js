@@ -176,7 +176,7 @@ const Login = async (req, res) => {
           where: { id },
           include: [Cars],
         });
-
+        delete User.pin
         return res.json({ success: true, User });
       }
       return res

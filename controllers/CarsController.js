@@ -5,18 +5,17 @@ const fetch = require("node-fetch");
 
 const SearchCar = async (req, res) => {
   try {
-    const { techNumber, phoneNumber } = req.body;
+    let { techNumber, phoneNumber } = req.body;
 
     const User = await Users.findOne({ where: { phoneNumber } });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
+    phoneNumber = phoneNumber.replace(/374/g, "0");
     if (Car)
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Another user already aded the car.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Another user already aded the car.",
+      });
     if (!User)
       return res
         .status(404)
@@ -56,20 +55,18 @@ const SearchCar = async (req, res) => {
       .json({ success: false, message: "Something went wrong." });
   }
 };
-const AddCar = async(req,res)=>{
+const AddCar = async (req, res) => {
   try {
-    const { techNumber, phoneNumber } = req.body;
+    let { techNumber, phoneNumber } = req.body;
 
     const User = await Users.findOne({ where: { phoneNumber } });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
-
+    phoneNumber = phoneNumber.replace(/374/g, "0");
     if (Car)
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Another user already aded the car.",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Another user already aded the car.",
+      });
     if (!User)
       return res
         .status(404)
@@ -107,19 +104,21 @@ const AddCar = async(req,res)=>{
       userId: User.id,
       carNumber: carData.car_reg_no,
       carMark: carData.car,
-      insuranceInfo:carData.insurance_info.insurance_name,
-      insuranceEndDate:carData.insurance_info.end_date,
-      inspection:carData.inspection,
+      insuranceInfo: carData.insurance_info.insurance_name,
+      insuranceEndDate: carData.insurance_info.end_date,
+      inspection: carData.inspection,
       serviceRequestId: carData.service_request_id,
       vehicleTypeHy: carData.vehicle_type,
       vehicleTypeEn: carData.vehicle_types[0].id,
     });
 
     return res.status(200).json({ success: true });
-  } catch (error) {
-    
   }
-}
+    catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
+};
 const DeleteCar = async (req, res) => {
   try {
     const { techNumber } = req.params;
@@ -153,16 +152,19 @@ const UpdateCarVehicleType = async (req, res) => {
     Car.vehicleTypeEn = id;
 
     await Car.save();
-    return res.status(200).json({ success: true, message: "The Car was updated successfully." });
+    return res
+      .status(200)
+      .json({ success: true, message: "The Car was updated successfully." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
 
+
 module.exports = {
   SearchCar,
   AddCar,
   DeleteCar,
-  UpdateCarVehicleType
+  UpdateCarVehicleType,
 };
