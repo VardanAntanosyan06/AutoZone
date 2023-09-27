@@ -51,10 +51,10 @@ const GetServicesForPay = async (req, res) => {
   try {
     const { techNumber } = req.body;
     if (!techNumber)
-      return res.status(403).json({ message: "techNumber cannot be null." });
+      return res.status(403).json({ success:false,message: "techNumber cannot be null." });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
-    if (!Car) res.status(404).json({ message: "Car was not found." });
+    if (!Car) res.status(404).json({ success:false,message: "Car was not found." });
     let services = await fetch(
       "https://api.onepay.am/autoclub/payment-service/services",
       {
