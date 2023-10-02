@@ -157,9 +157,26 @@ const UpdateCarVehicleType = async (req, res) => {
 };
 
 
+const getUserByCarNumber = async (req,res)=>{
+  try {
+    const {carNumber} = req.params;
+
+    const User = await Users.findOne({
+      include: { model: Cars, where: { carNumber } },
+
+      attributes:['id','phoneNumber','fullName','gmail']
+    });
+    if(!User) return res.status(404).json({success:false,message:"User not found!"})
+    return res.status(200).json({success:true,User})
+  }  catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+}
 module.exports = {
   SearchCar,
   AddCar,
   DeleteCar,
   UpdateCarVehicleType,
+  getUserByCarNumber
 };
