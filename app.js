@@ -11,6 +11,7 @@ const swaggerUi = require('swagger-ui-express');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var carsRouter = require('./routes/cars');
+var notificationRouter = require('./routes/notification');
 var TechPaymentRouter = require('./routes/TechPay');
 const getAlllocationsRouter = require("./routes/getAlllocations")
 var app = express();
@@ -31,6 +32,7 @@ app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/cars', carsRouter);
 app.use('/api/v1/techPayment', TechPaymentRouter);
 app.use('/api/v1/',getAlllocationsRouter);
+app.use('/api/v1/notifications',notificationRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require("./controllers/swaggerController").swaggerSpec));
 
 
