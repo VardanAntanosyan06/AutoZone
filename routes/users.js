@@ -6,6 +6,7 @@ router.post("/register",controller.LoginOrRegister)
 router.post("/sendSMSCodeForVerification",controller.SendSMSCodeForVerification)
 router.post("/verification",controller.Verification)
 router.patch("/createOrUpdatePin",controller.CreateOrUpdatePin)
+router.patch("/updateDeviceToken",controller.updateDeviceToken)
 router.post("/login",controller.Login)
 router.delete("/deleteUserForTesting/:phoneNumber",controller.deleteUserForTesting)
 

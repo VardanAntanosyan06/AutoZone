@@ -17,6 +17,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      deviceToken:DataTypes.STRING,
+      token:DataTypes.STRING,
       messageSendTime: DataTypes.DATE,
       messageSendCount: {
         type: DataTypes.INTEGER,

@@ -74,31 +74,33 @@ const SendSMSCodeForVerification = async (req, res) => {
     const User = await Users.findOne({
       where: { phoneNumber },
     });
-    if(!User || !User.isVerified) return res.status(403).json({success:false,message:"Verified user not found!"})
+    if (!User || !User.isVerified)
+      return res
+        .status(403)
+        .json({ success: false, message: "Verified user not found!" });
     if (moment().diff(User.messageSendTime, "hours") >= 24) {
       (User.messageSendTime = null), (User.messageSendCount = 0);
     }
 
-    if (User.isVerified && User.messageSendCount < 2){
+    if (User.isVerified && User.messageSendCount < 2) {
       const code = Math.floor(Math.random() * 8999 + 1000);
       const hashPin = bcrypt.hashSync(code.toString(), 10);
-              sendSMSCode(
-          +phoneNumber,
-          "Verify your account",
-          `Verification code is ${code}`
-          );
-          User.pin = hashPin,
-          User.messageSendCount = User.messageSendCount + 1;
-          User.messageSendTime = moment();
-          await User.save();
+      sendSMSCode(
+        +phoneNumber,
+        "Verify your account",
+        `Verification code is ${code}`
+      );
+      (User.pin = hashPin), (User.messageSendCount = User.messageSendCount + 1);
+      User.messageSendTime = moment();
+      await User.save();
       return res.json({
         success: true,
         message: "The verification code was sent successfully.",
       });
     }
     return res
-    .status(403)
-    .json({ message: " Maximum daily message limit exceeded." });
+      .status(403)
+      .json({ message: " Maximum daily message limit exceeded." });
   } catch (error) {
     console.log(error);
 
@@ -148,6 +150,8 @@ const CreateOrUpdatePin = async (req, res) => {
         { user_id: User.id, email: User.email },
         process.env.JWT_SECRET
       );
+      User.token = token;
+      await User.save()
       return res.json({ success: true, token });
     }
 
@@ -161,39 +165,46 @@ const CreateOrUpdatePin = async (req, res) => {
 const Login = async (req, res) => {
   try {
     let { pin, phoneNumber } = req.body;
-    
+    if (!phoneNumber || !pin)
+    return res
+      .status(403)
+      .json({ message: "phoneNumber or pin cannot be empty." });
     pin = pin.toString();
     phoneNumber = phoneNumber.toString();
     let { authorization: token } = req.headers;
+    
     if (token) {
-      const id = jwt.verify(
-        (token = token.replace("Bearer ", "")),
-        process.env.JWT_SECRET
-      ).user_id;
-      if (id) {
+      token = token.replace("Bearer ", "")
         let User = await Users.findOne({
-          attributes: ["fullName", "gmail", "phoneNumber", "pin"],
-          where: { id },
+          attributes: ["id", "fullName", "gmail", "phoneNumber", "pin","token"],
+          where: { token },
           include: [Cars],
         });
-        delete User.pin
-        return res.json({ success: true, User });
-      }
-      return res
+        if(User){
+          delete User.dataValues.pin;
+          return res.json({ success: true, User });
+          
+        }
+        return res
         .status(403)
         .json({ message: "Token timeout: please enter the pin code" });
-    }
-    if (!phoneNumber || !pin)
-      return res
-        .status(403)
-        .json({ message: "phoneNumber or pin cannot be empty." });
+      }
+
+
     let User = await Users.findOne({
-      attributes: ["fullName", "gmail", "phoneNumber", "pin"],
+      attributes: ["id", "fullName", "gmail", "phoneNumber", "pin"],
       where: { phoneNumber },
       include: [Cars],
     });
 
     if (User && (await bcrypt.compare(pin, User.pin))) {
+      token = jwt.sign(
+        { user_id: User.id, email: User.fullName },
+        process.env.JWT_SECRET
+      );
+      User.token = token;
+      await User.save()
+      delete User.dataValues.pin;
       return res.json({ success: true, User });
     }
 
@@ -235,11 +246,49 @@ const deleteUserForTesting = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
+
+const updateDeviceToken = async (req, res) => {
+  try {
+    const { deviceToken } = req.body;
+    let { authorization: token } = req.headers;
+
+    if (token) {
+      token = token.replace("Bearer ", "")
+
+        let User = await Users.findOne({
+          attributes: ["id", "fullName", "gmail", "phoneNumber", "pin"],
+          where: { token },
+          include: [Cars],
+        });
+        if(User){
+          User.deviceToken = deviceToken;
+          await User.save();
+          return res.json({ success: true });
+        }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    if (error.name == "JsonWebTokenError") {
+      return res
+        .status(403)
+        .json({success:false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
+  }
+};
 module.exports = {
   LoginOrRegister,
   Verification,
   CreateOrUpdatePin,
   Login,
   deleteUserForTesting,
-  SendSMSCodeForVerification
+  SendSMSCodeForVerification,
+  updateDeviceToken,
 };
