@@ -78,7 +78,7 @@ const AddCar = async (req, res) => {
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-          userID: User.id,
+          userID: 32,
           phone: phoneNumber,
           documentNumber: techNumber,
         }),
@@ -164,7 +164,7 @@ const getUserByCarNumber = async (req,res)=>{
     const User = await Users.findOne({
       include: { model: Cars, where: { carNumber } },
 
-      attributes:['id','phoneNumber','fullName','gmail']
+      attributes:['id','phoneNumber','fullName','gmail','deviceToken']
     });
     if(!User) return res.status(404).json({success:false,message:"User not found!"})
     return res.status(200).json({success:true,User})
