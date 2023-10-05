@@ -151,7 +151,7 @@ const CreateOrUpdatePin = async (req, res) => {
         process.env.JWT_SECRET
       );
       User.token = token;
-      await User.save()
+      await User.save();
       return res.json({ success: true, token });
     }
 
@@ -166,30 +166,28 @@ const Login = async (req, res) => {
   try {
     let { pin, phoneNumber } = req.body;
     if (!phoneNumber || !pin)
-    return res
-      .status(403)
-      .json({ message: "phoneNumber or pin cannot be empty." });
+      return res
+        .status(403)
+        .json({ message: "phoneNumber or pin cannot be empty." });
     pin = pin.toString();
     phoneNumber = phoneNumber.toString();
     let { authorization: token } = req.headers;
-    
+
     if (token) {
-      token = token.replace("Bearer ", "")
-        let User = await Users.findOne({
-          attributes: ["id", "fullName", "gmail", "phoneNumber", "pin","token"],
-          where: { token },
-          include: [Cars],
-        });
-        if(User){
-          delete User.dataValues.pin;
-          return res.json({ success: true, User });
-          
-        }
-        return res
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id", "fullName", "gmail", "phoneNumber", "pin", "token"],
+        where: { token },
+        include: [Cars],
+      });
+      if (User) {
+        delete User.dataValues.pin;
+        return res.json({ success: true, User });
+      }
+      return res
         .status(403)
         .json({ message: "Token timeout: please enter the pin code" });
-      }
-
+    }
 
     let User = await Users.findOne({
       attributes: ["id", "fullName", "gmail", "phoneNumber", "pin"],
@@ -203,7 +201,7 @@ const Login = async (req, res) => {
         process.env.JWT_SECRET
       );
       User.token = token;
-      await User.save()
+      await User.save();
       delete User.dataValues.pin;
       return res.json({ success: true, User });
     }
@@ -253,18 +251,18 @@ const updateDeviceToken = async (req, res) => {
     let { authorization: token } = req.headers;
 
     if (token) {
-      token = token.replace("Bearer ", "")
+      token = token.replace("Bearer ", "");
 
-        let User = await Users.findOne({
-          attributes: ["id", "fullName", "gmail", "phoneNumber", "pin"],
-          where: { token },
-          include: [Cars],
-        });
-        if(User){
-          User.deviceToken = deviceToken;
-          await User.save();
-          return res.json({ success: true });
-        }
+      let User = await Users.findOne({
+        attributes: ["id", "fullName", "gmail", "phoneNumber", "pin"],
+        where: { token },
+        include: [Cars],
+      });
+      if (User) {
+        User.deviceToken = deviceToken;
+        await User.save();
+        return res.json({ success: true });
+      }
       return res
         .status(401)
         .json({ success: false, message: "User not found!" });
@@ -274,9 +272,7 @@ const updateDeviceToken = async (req, res) => {
       .json({ success: false, message: "Token cannot be empty" });
   } catch (error) {
     if (error.name == "JsonWebTokenError") {
-      return res
-        .status(403)
-        .json({success:false, message: "Invalid token" });
+      return res.status(403).json({ success: false, message: "Invalid token" });
     } else {
       console.log(error);
       return res.status(500).json({ message: "Something went wrong." });
@@ -284,45 +280,73 @@ const updateDeviceToken = async (req, res) => {
   }
 };
 
-const UpdateUserData = async (req,res)=>{
+const UpdateUserData = async (req, res) => {
   try {
-    const {email,fullName} = req.body;
+    const { email, fullName } = req.body;
     let { authorization: token } = req.headers;
 
-    console.log(token);
-      if (token) {
-        console.log(token);
+    if (token) {
+      token = token.replace("Bearer ", "");
 
-        token = token.replace("Bearer ", "")
-        console.log(token);
-          let User = await Users.findOne({
-            attributes: ["id", "fullName", "gmail", "phoneNumber"],
-            where: { token },
-          });
-          if(User){
-            fullName? User.fullName = fullName : User.fullName = User.fullName;
-            email? User.gmail = email : User.gmail = User.gmail;
-            await User.save();
-            return res.json({ success: true });
-          }
-        return res
-          .status(401)
-          .json({ success: false, message: "User not found!" });
+      let User = await Users.findOne({
+        attributes: ["id", "fullName", "gmail", "phoneNumber"],
+        where: { token },
+      });
+      if (User) {
+        fullName ? (User.fullName = fullName) : (User.fullName = User.fullName);
+        email ? (User.gmail = email) : (User.gmail = User.gmail);
+        await User.save();
+        return res.json({ success: true });
       }
       return res
-        .status(403)
-        .json({ success: false, message: "Token cannot be empty" });
-    } catch (error) {
-      if (error.name == "JsonWebTokenError") {
-        return res
-          .status(403)
-          .json({success:false, message: "Invalid token" });
-      } else {
-        console.log(error);
-        return res.status(500).json({ message: "Something went wrong." });
-      }
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    if (error.name == "JsonWebTokenError") {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
     }
   }
+};
+
+const GetUserData = async (req, res) => {
+  try {
+    let { authorization: token } = req.headers;
+
+    if (token) {
+      token = token.replace("Bearer ", "");
+
+      let User = await Users.findOne({
+        attributes: ["id", "fullName", "gmail", "phoneNumber"],
+        where: { token },
+        include: [Cars],
+      });
+      if (User) {
+        return res.json({ success: true,User });
+      }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    if (error.name == "JsonWebTokenError") {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
+  }
+};
+
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -331,5 +355,6 @@ module.exports = {
   deleteUserForTesting,
   SendSMSCodeForVerification,
   updateDeviceToken,
-  UpdateUserData
+  UpdateUserData,
+  GetUserData
 };
