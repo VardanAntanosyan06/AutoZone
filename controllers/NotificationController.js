@@ -119,7 +119,7 @@ const getNotificationHistory = async (req, res) => {
       if (notifications) {
         // notifications = notifications.Notifications.sort((a,b)=>a.createdAt+b.c.createdAt)
         notifications.Notifications.sort((a, b) => b.createdAt - a.createdAt);
-        return res.json({ success: true, Notifications:notifications });
+        return res.json({ success: true, Notifications:notifications.Notifications });
       }
       return res
         .status(401)
