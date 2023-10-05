@@ -288,9 +288,12 @@ const UpdateUserData = async (req,res)=>{
   try {
     const {email,fullName} = req.body;
     let { authorization: token } = req.headers;
+
       if (token) {
+        console.log(token);
+
         token = token.replace("Bearer ", "")
-  
+        console.log(token);
           let User = await Users.findOne({
             attributes: ["id", "fullName", "gmail", "phoneNumber"],
             where: { token },
