@@ -283,6 +283,42 @@ const updateDeviceToken = async (req, res) => {
     }
   }
 };
+
+const UpdateUserData = async (req,res)=>{
+  try {
+    const {email,fullName} = req.body;
+    let { authorization: token } = req.headers;
+      if (token) {
+        token = token.replace("Bearer ", "")
+  
+          let User = await Users.findOne({
+            attributes: ["id", "fullName", "gmail", "phoneNumber"],
+            where: { token },
+          });
+          if(User){
+            fullName? User.fullName = fullName : User.fullName = User.fullName;
+            email? User.gmail = email : User.gmail = User.gmail;
+            await User.save();
+            return res.json({ success: true });
+          }
+        return res
+          .status(401)
+          .json({ success: false, message: "User not found!" });
+      }
+      return res
+        .status(403)
+        .json({ success: false, message: "Token cannot be empty" });
+    } catch (error) {
+      if (error.name == "JsonWebTokenError") {
+        return res
+          .status(403)
+          .json({success:false, message: "Invalid token" });
+      } else {
+        console.log(error);
+        return res.status(500).json({ message: "Something went wrong." });
+      }
+    }
+  }
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -291,4 +327,5 @@ module.exports = {
   deleteUserForTesting,
   SendSMSCodeForVerification,
   updateDeviceToken,
+  UpdateUserData
 };
