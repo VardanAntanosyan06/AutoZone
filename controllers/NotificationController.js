@@ -9,8 +9,12 @@ const sendNotifications = async (req, res) => {
     const { receiverId, title, body, answerId } = req.body;
     let { authorization: token } = req.headers;
 
-    if (token && receiverId) {
-      token = token.replace("Bearer ", "");
+    console.log(token);
+      if (token) {
+        console.log(token);
+
+        token = token.replace("Bearer ", "")
+        console.log(token);
 
       const Sender = await Users.findOne({ where: { token } });
       const receiver = await Users.findOne({ where: { id: receiverId } });
