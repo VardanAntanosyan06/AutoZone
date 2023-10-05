@@ -23,5 +23,12 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Notifications',
   });
+  const Users = sequelize.define("Users");
+  const Answers = sequelize.define("Answers");
+
+  Notifications.hasOne(Users)
+  Notifications.hasOne(Answers,{
+    foreignKey:"notificationId"
+  })
   return Notifications;
 };

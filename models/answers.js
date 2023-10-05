@@ -21,5 +21,9 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Answers',
   });
+
+  const Notifications = sequelize.define("Notifications")
+  Answers.hasOne(Notifications)
+
   return Answers;
 };

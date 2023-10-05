@@ -1,6 +1,6 @@
 const { Users } = require("../models");
 const { Cars } = require("../models");
-const { Notifications } = require("../models");
+const { Notifications } = require("../models"); 
 const { Answers } = require("../models");
 const serviceAccount = require("../public/jsons/google-services.json");
 const admin = require("firebase-admin");
@@ -58,8 +58,12 @@ const notificationAnswer = async (req, res) => {
   try {
     const { title, body, notificationId } = req.body;
 
-    const Notification = await Notifications.findOne({
-      where: { id: notificationId },
+    const Notification = await Users.findOne({
+      include:{
+        model:Notifications,
+        where: { id: notificationId },
+      },
+      attributes:['deviceToken']
     });
 
     if (!Notification) {
@@ -77,20 +81,24 @@ const notificationAnswer = async (req, res) => {
         title,
         body,
       },
-      token: Notification.senderId,
+      token: Notification.deviceToken,
     };
 
-    await admin.messaging().send(message);
-    await Notifications.create({
+    let response = await admin.messaging().send(message);
+    console.log(response);
+    await Answers.create({
       title,
       body,
       notificationId,
     });
+
+    return res.status(200).json({success:true})
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
+
 
 const getNotificationHistory = async (req, res) => {
   try {
@@ -99,14 +107,18 @@ const getNotificationHistory = async (req, res) => {
     if (token) {
       token = token.replace("Bearer ", "");
 
-      let notifications = await Notifications.findAll({
+      let notifications = await Users.findOne({
         include: {
-          model: Users,
-          attributes: ["id", "fullName", "gmail", "phoneNumber"],
-          where: { token },
+          model: Notifications,
+          include:[Answers],
+          
         },
+        where: { token },
+        attributes: ["id", "fullName", "gmail", "phoneNumber"],
       });
       if (notifications) {
+        // notifications = notifications.Notifications.sort((a,b)=>a.createdAt+b.c.createdAt)
+        notifications.Notifications.sort((a, b) => b.createdAt - a.createdAt);
         return res.json({ success: true, Notifications:notifications });
       }
       return res
@@ -127,5 +139,6 @@ const getNotificationHistory = async (req, res) => {
 };
 module.exports = {
   sendNotifications,
-  notificationAnswer
+  notificationAnswer,
+  getNotificationHistory
 };
