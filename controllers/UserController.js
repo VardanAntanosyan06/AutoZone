@@ -289,6 +289,7 @@ const UpdateUserData = async (req,res)=>{
     const {email,fullName} = req.body;
     let { authorization: token } = req.headers;
 
+    console.log(token);
       if (token) {
         console.log(token);
 
