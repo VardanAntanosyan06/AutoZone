@@ -14,10 +14,13 @@ const sendNotifications = async (req, res) => {
 
       const Sender = await Users.findOne({ where: { token } });
       const receiver = await Users.findOne({ where: { id: receiverId } });
+
       if (Sender && receiver) {
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
-        });
+        if(!admin.apps.length){
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+          });
+        }
         const message = {
           notification: {
             title,
@@ -34,6 +37,7 @@ const sendNotifications = async (req, res) => {
           body,
           title,
           status:"sent",
+          answerId
         });
         return res.status(200).json({ success: true });
       }
