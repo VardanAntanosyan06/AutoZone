@@ -284,9 +284,11 @@ const UpdateUserData = async (req, res) => {
   try {
     const { email, fullName } = req.body;
     let { authorization: token } = req.headers;
+    console.log(token);
 
     if (token) {
       token = token.replace("Bearer ", "");
+      console.log(token);
 
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber"],
@@ -318,10 +320,11 @@ const UpdateUserData = async (req, res) => {
 const GetUserData = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
+    console.log(token);
 
     if (token) {
       token = token.replace("Bearer ", "");
-
+      console.log(token);
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber"],
         where: { token },
