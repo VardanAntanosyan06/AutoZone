@@ -350,6 +350,7 @@ const GetUserData = async (req, res) => {
   }
 };
 
+const PushTest = async(req,res)
 module.exports = {
   LoginOrRegister,
   Verification,
