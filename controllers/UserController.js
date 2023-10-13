@@ -1,10 +1,11 @@
 const { Users } = require("../models");
 const { Cars } = require("../models");
 const moment = require("moment");
-
+const {v4} = require('uuid')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const path  = require("path");
+const fs = require("fs")
 const { sendSMSCode } = require("../controllers/lib");
 
 const LoginOrRegister = async (req, res) => {
@@ -320,18 +321,16 @@ const UpdateUserData = async (req, res) => {
 const GetUserData = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
-    console.log(token);
 
     if (token) {
       token = token.replace("Bearer ", "");
-      console.log(token);
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber"],
         where: { token },
         include: [Cars],
       });
       if (User) {
-        return res.json({ success: true,User });
+        return res.json({ success: true, User });
       }
       return res
         .status(401)
@@ -350,7 +349,48 @@ const GetUserData = async (req, res) => {
   }
 };
 
-const PushTest = async(req,res)
+const UpdateUserImage = async (req, res) => {
+  try {
+    const image = req.files?.image;
+    let { authorization: token } = req.headers;
+    if (token && image) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id","image"],
+        where: { token },
+      });
+      if (User) { 
+      let UserIcon  = User.image;
+      if(UserIcon){
+        UserIcon = UserIcon.split(process.env.HOST)[1]
+        console.log(UserIcon);
+        fs.unlink(path.resolve(__dirname, "..", "static",UserIcon), (err) => {
+          if (err) {
+              throw err;
+          }
+        })
+      }  
+
+      const type = image.mimetype.split("/")[1]; 
+      const fileName = v4() + "." + type; 
+      image.mv(path.resolve(__dirname, "..", "static", fileName));
+      User.image = process.env.HOST+fileName
+      await User.save()
+        return res.json({ success: true,image:process.env.HOST+fileName });
+      }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token or Image cannot be empty" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+}
+
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -360,5 +400,6 @@ module.exports = {
   SendSMSCodeForVerification,
   updateDeviceToken,
   UpdateUserData,
-  GetUserData
+  GetUserData,
+  UpdateUserImage
 };

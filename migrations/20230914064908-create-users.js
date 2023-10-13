@@ -21,6 +21,9 @@ module.exports = {
       pin: {
         type: Sequelize.STRING,
       },
+      image:{
+        type:Sequelize.STRING
+      },
       isVerified: {
         type: Sequelize.BOOLEAN,
       },

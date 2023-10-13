@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      image:{
+        type:DataTypes.STRING
+      },
       deviceToken:DataTypes.STRING,
       token:DataTypes.STRING,
       messageSendTime: DataTypes.DATE,

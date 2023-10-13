@@ -4,6 +4,9 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
+const bodyParser = require("body-parser")
+const fileUpload = require("express-fileupload");
+
 require("dotenv").config()
 const swaggerUi = require('swagger-ui-express');
 
@@ -26,6 +29,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json()); 
+app.use(fileUpload());
 
 app.use('/', indexRouter);
 app.use('/api/v1/users', usersRouter);
@@ -34,7 +39,7 @@ app.use('/api/v1/techPayment', TechPaymentRouter);
 app.use('/api/v1/',getAlllocationsRouter);
 app.use('/api/v1/notifications',notificationRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require("./controllers/swaggerController").swaggerSpec));
-
+app.use(express.static(path.resolve(__dirname, "static")));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

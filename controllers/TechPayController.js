@@ -57,8 +57,7 @@ const GetServicesForPay = async (req, res) => {
         .json({ successs: false, message: "techNumber cannot be null." });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
-    if (!Car)
-      res.status(404).json({ successs: false, message: "Car was not found." });
+    if (!Car) return res.status(404).json({ successs: false, message: "Car was not found." });
     let services = await fetch(
       "https://api.onepay.am/autoclub/payment-service/services",
       {
@@ -88,7 +87,43 @@ const GetServicesForPay = async (req, res) => {
   }
 };
 
-const GetPaymentURL = async (req, res) => {
+const GetOrders = async(req,res)=>{
+  try {
+    const { id } = req.params;
+
+    const User = await Users.findOne({ where: { id } });
+    if(!User) return res.status(404).json({success:false,message:"User not found!"})
+
+    let payInfo = await fetch(
+      "https://api.onepay.am/autoclub/payment-service/orders",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+        },
+        body: JSON.stringify({
+          userID:id
+      }),
+      }
+    );
+
+    if (!payInfo.ok) {
+      return res.status(500).json({ error: "Failed to fetch pay info" });
+    }
+    payInfo = await payInfo.json();
+
+   return res.status(200).json({success:true,payInfo})
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+}
+
+const GetPaymentURLArca = async (req, res) => {
   try {
     const { techNumber, station, services } = req.body;
 
@@ -166,44 +201,17 @@ const GetPaymentURL = async (req, res) => {
   }
 };
 
-const GetOrders = async(req,res)=>{
+const GetPaymentURLIdram = async (req,res)=>{
   try {
-    const { id } = req.params;
-
-    const User = await Users.findOne({ where: { id } });
-    if(!User) return res.status(404).json({success:false,message:"User not found!"})
-
-    let payInfo = await fetch(
-      "https://api.onepay.am/autoclub/payment-service/orders",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization:
-            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-        },
-        body: JSON.stringify({
-          userID:id
-      }),
-      }
-    );
-
-    if (!payInfo.ok) {
-      return res.status(500).json({ error: "Failed to fetch pay info" });
-    }
-    payInfo = await payInfo.json();
-
-   return res.status(200).json({success:true,payInfo})
-
+    // const {}
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Something went wrong." });
+    
   }
 }
 module.exports = {
   GetStatons,
   GetServicesForPay,
-  GetPaymentURL,
+  GetPaymentURLArca,
   GetOrders
 };
+
