@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cors = require('cors');
 const bodyParser = require("body-parser")
 const fileUpload = require("express-fileupload");
+const cron = require('node-cron');
 
 require("dotenv").config()
 const swaggerUi = require('swagger-ui-express');
@@ -17,6 +18,7 @@ var carsRouter = require('./routes/cars');
 var notificationRouter = require('./routes/notification');
 var TechPaymentRouter = require('./routes/TechPay');
 const getAlllocationsRouter = require("./routes/getAlllocations")
+const {sendInspectionMessage} = require("./controllers/lib")
 var app = express();
 
 // view engine setup
@@ -55,6 +57,12 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+
+const cronSchedule = '0 0 0 */10 * *';
+cron.schedule(cronSchedule, () => {
+    sendInspectionMessage();
 });
 
 module.exports = app;

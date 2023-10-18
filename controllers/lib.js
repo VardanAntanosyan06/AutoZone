@@ -1,4 +1,9 @@
 const fetch = require("node-fetch");
+const {Users} = require("../models")
+const {Cars} = require("../models")
+const serviceAccount = require("../public/jsons/google-services.json");
+const admin = require("firebase-admin");
+const {Op} = require("sequelize")
 
 const sendSMSCode = async (phoneNumber, subject, text) => {
   //working API
@@ -78,9 +83,60 @@ const getAlllocations = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
+function formatDate(date) {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed, so we add 1.
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+
+const sendInspectionMessage = async () => {
+    try {
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+            });
+        }
+        const currentDate = new Date();
+
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 5);
+        
+        const User = await Users.findAll({
+            attributes:['id','deviceToken'],
+            include:{
+                model:Cars,
+                where: {
+                    inspection: {
+                        [Op.and]: {
+                            [Op.gte]: currentDate,
+                            [Op.lte]: targetDate,
+                        },
+                    },
+                },
+            }
+        })
+        
+        await Promise.all(User.map(async (e)=>{
+            const message = {
+                notification: {
+                    body: `${e.Cars[0].carNumber} մեքենայի տեխզննման ժամկետն ավարտվում է ${formatDate(new Date(e.Cars[0].inspection))}.-ին:`,
+                },
+                token: e.deviceToken
+            
+            };
+          
+            await admin.messaging().send(message);
+        }))
+    } catch (error) {
+        console.error('Error sending GET request:', error);
+    }
+};
 
 module.exports = {
   sendSMSCode,
   calculateDistance,
-  getAlllocations
+  getAlllocations,
+  sendInspectionMessage
 };

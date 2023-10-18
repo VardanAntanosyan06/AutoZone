@@ -28,7 +28,7 @@ module.exports = {
          type: Sequelize.DATE 
         },
       inspection:{
-        type: Sequelize.STRING
+        type: Sequelize.DATE
       },
       serviceRequestId: {
         type: Sequelize.INTEGER,

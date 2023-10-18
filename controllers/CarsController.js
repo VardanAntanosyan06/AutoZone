@@ -101,7 +101,7 @@ const AddCar = async (req, res) => {
       carMark: carData.car,
       insuranceInfo: carData.insurance_info.insurance_name,
       insuranceEndDate: carData.insurance_info.end_date,
-      inspection: carData.inspection,
+      inspection: new Date(carData.inspection).toISOString(),
       serviceRequestId: carData.service_request_id,
       vehicleTypeHy: carData.vehicle_type,
       vehicleTypeEn: carData.vehicle_types[0].id,
