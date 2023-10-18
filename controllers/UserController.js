@@ -1,5 +1,6 @@
 const { Users } = require("../models");
 const { Cars } = require("../models");
+const { Complaints } = require("../models");
 const moment = require("moment");
 const {v4} = require('uuid')
 const bcrypt = require("bcrypt");
@@ -391,6 +392,40 @@ const UpdateUserImage = async (req, res) => {
   }
 }
 
+const sendComplaint = async(req,res)=>{
+  try {
+    const {reciverId,complaint} = req.body;
+    let { authorization: token } = req.headers;
+    if (token) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id"],
+        where: { token },
+      });
+      if (User) {
+        await Complaints.create({
+          senderId:User.id,
+          reciverId,
+          complaint
+        })
+        return res.json({ success: true});
+      }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    if (error.name == "JsonWebTokenError") {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
+  }
+}
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -401,5 +436,6 @@ module.exports = {
   updateDeviceToken,
   UpdateUserData,
   GetUserData,
-  UpdateUserImage
+  UpdateUserImage,
+  sendComplaint
 };

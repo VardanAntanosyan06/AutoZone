@@ -11,6 +11,7 @@ router.patch("/updateDeviceToken",controller.updateDeviceToken)
 router.patch("/updateUserData",controller.UpdateUserData)
 router.patch("/updateUserImage",controller.UpdateUserImage)
 router.post("/login",controller.Login)
+router.post("/sendComplaint",controller.sendComplaint)
 router.delete("/deleteUserForTesting/:phoneNumber",controller.deleteUserForTesting)
 
 
