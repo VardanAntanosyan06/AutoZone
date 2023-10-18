@@ -342,7 +342,7 @@ const GetUserData = async (req, res) => {
     if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
-        attributes: ["id", "fullName", "gmail", "phoneNumber"],
+        attributes: ["id", "fullName", "gmail", "phoneNumber","image"],
         where: { token },
         include: [Cars],
       });
