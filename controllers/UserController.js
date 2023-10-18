@@ -2,10 +2,10 @@ const { Users } = require("../models");
 const { Cars } = require("../models");
 const { Complaints } = require("../models");
 const moment = require("moment");
-const {v4} = require('uuid')
+const { v4 } = require('uuid')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const path  = require("path");
+const path = require("path");
 const fs = require("fs")
 const { sendSMSCode } = require("../controllers/lib");
 
@@ -121,9 +121,13 @@ const Verification = async (req, res) => {
     });
     if (User && bcrypt.compareSync(verificationCode, User.pin)) {
       User.isVerified = true;
-
+      const token = jwt.sign(
+        { user_id: User.id, email: User.email },
+        process.env.JWT_SECRET
+      );
+      User.token = token;
       await User.save();
-      return res.json({ success: true, message: "User Verified!" });
+      return res.json({ success: true, token });
     }
 
     return res.status(403).json({
@@ -137,30 +141,42 @@ const Verification = async (req, res) => {
 
 const CreateOrUpdatePin = async (req, res) => {
   try {
-    const { phoneNumber, pin } = req.body;
+    const { pin } = req.body;
+    let { authorization: token } = req.headers;
 
-    const User = await Users.findOne({
-      where: { phoneNumber },
-    });
+    if (token) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id", "fullName", "gmail", "phoneNumber","isVerified"],
+        where: { token },
+      });
+      if (User && User.isVerified) {
+        const hashPin = bcrypt.hashSync(pin.toString(), 10);
+        User.pin = hashPin;
+        await User.save();
 
-    if (User && User.isVerified) {
-      const hashPin = bcrypt.hashSync(pin.toString(), 10);
-      User.pin = hashPin;
-      await User.save();
-
-      const token = jwt.sign(
-        { user_id: User.id, email: User.email },
-        process.env.JWT_SECRET
-      );
-      User.token = token;
-      await User.save();
-      return res.json({ success: true, token });
+        const token = jwt.sign(
+          { user_id: User.id, email: User.email },
+          process.env.JWT_SECRET
+        );
+        User.token = token;
+        await User.save();
+        return res.json({ success: true, token });
+      }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
     }
-
-    return res.status(403).json({ message: "Wrong phoneNumber!" });
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Something went wrong." });
+    if (error.name == "JsonWebTokenError") {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
   }
 };
 
@@ -357,27 +373,27 @@ const UpdateUserImage = async (req, res) => {
     if (token && image) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
-        attributes: ["id","image"],
+        attributes: ["id", "image"],
         where: { token },
       });
-      if (User) { 
-      let UserIcon  = User.image;
-      if(UserIcon){
-        UserIcon = UserIcon.split(process.env.HOST)[1]
-        console.log(UserIcon);
-        fs.unlink(path.resolve(__dirname, "..", "static",UserIcon), (err) => {
-          if (err) {
+      if (User) {
+        let UserIcon = User.image;
+        if (UserIcon) {
+          UserIcon = UserIcon.split(process.env.HOST)[1]
+          console.log(UserIcon);
+          fs.unlink(path.resolve(__dirname, "..", "static", UserIcon), (err) => {
+            if (err) {
               throw err;
-          }
-        })
-      }  
+            }
+          })
+        }
 
-      const type = image.mimetype.split("/")[1]; 
-      const fileName = v4() + "." + type; 
-      image.mv(path.resolve(__dirname, "..", "static", fileName));
-      User.image = process.env.HOST+fileName
-      await User.save()
-        return res.json({ success: true,image:process.env.HOST+fileName });
+        const type = image.mimetype.split("/")[1];
+        const fileName = v4() + "." + type;
+        image.mv(path.resolve(__dirname, "..", "static", fileName));
+        User.image = process.env.HOST + fileName
+        await User.save()
+        return res.json({ success: true, image: process.env.HOST + fileName });
       }
       return res
         .status(401)
@@ -392,9 +408,9 @@ const UpdateUserImage = async (req, res) => {
   }
 }
 
-const sendComplaint = async(req,res)=>{
+const sendComplaint = async (req, res) => {
   try {
-    const {reciverId,complaint} = req.body;
+    const { reciverId, complaint } = req.body;
     let { authorization: token } = req.headers;
     if (token) {
       token = token.replace("Bearer ", "");
@@ -404,11 +420,11 @@ const sendComplaint = async(req,res)=>{
       });
       if (User) {
         await Complaints.create({
-          senderId:User.id,
+          senderId: User.id,
           reciverId,
           complaint
         })
-        return res.json({ success: true});
+        return res.json({ success: true });
       }
       return res
         .status(401)

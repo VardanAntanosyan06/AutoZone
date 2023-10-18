@@ -137,6 +137,8 @@ const getNotificationHistory = async (req, res) => {
     }
   }
 };
+
+
 module.exports = {
   sendNotifications,
   notificationAnswer,
