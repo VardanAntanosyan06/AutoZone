@@ -132,7 +132,7 @@ const GetPaymentURLArca = async (req, res) => {
         .status(403)
         .json({
           success: false,
-          message: "techNumber,userID and station are ",
+          message: "techNumber,userID and station are undefined",
         });
     const User = await Users.findOne({
       include: { model: Cars, where: { carTechNumber: techNumber } },

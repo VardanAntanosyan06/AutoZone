@@ -54,6 +54,7 @@ const AddCar = async (req, res) => {
   try {
     let { techNumber, phoneNumber } = req.body;
 
+    techNumber = techNumber.toUpperCase()
     const User = await Users.findOne({ where: { phoneNumber } });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
     phoneNumber = phoneNumber.replace(/374/g, "0");
@@ -159,8 +160,9 @@ const UpdateCarVehicleType = async (req, res) => {
 
 const getUserByCarNumber = async (req,res)=>{
   try {
-    const {carNumber} = req.params;
+    let {carNumber} = req.params;
 
+    carNumber = carNumber.toUpperCase()
     const User = await Users.findOne({
       include: { model: Cars, where: { carNumber } },
 
