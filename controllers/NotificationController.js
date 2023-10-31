@@ -14,8 +14,8 @@ const sendNotifications = async (req, res) => {
       token = token.replace("Bearer ", "");
 
       const Sender = await Users.findOne({ where: { token } });
+      
       const receiver = await Users.findOne({ where: { id: receiverId } });
-
       if (Sender && receiver) {
         if (!admin.apps.length) {
           admin.initializeApp({

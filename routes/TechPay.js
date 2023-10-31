@@ -3,6 +3,7 @@ var router = express.Router();
 const controller = require("../controllers/TechPayController")
 
 router.post("/getStations",controller.GetStatons)
+router.post("/getAllStations",controller.GetAllStatons)
 router.post("/getServicesForPay",controller.GetServicesForPay)
 router.post("/getPaymentURL",controller.GetPaymentURLArca)
 router.get("/getOrders/:id",controller.GetOrders)

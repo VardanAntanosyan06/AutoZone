@@ -162,6 +162,7 @@ const getUserByCarNumber = async (req,res)=>{
   try {
     let {carNumber} = req.params;
 
+    
     carNumber = carNumber.toUpperCase()
     const User = await Users.findOne({
       include: { model: Cars, where: { carNumber } },

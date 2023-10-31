@@ -48,6 +48,40 @@ const GetStatons = async (req, res) => {
   }
 };
 
+const GetAllStatons = async (req, res) => {
+  try {
+    const { community, region } = req.body;
+
+    if(!community || !region) return res.status(403).json({success:false,message:"community or region cannot be empty"})
+
+    let stations = await fetch("https://api.onepay.am/autoclub/partners", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      Authorization:
+          "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+      },
+    });
+    stations = await stations.json();
+
+    stations = stations.filter((e)=>e.location.parent.translations.en.name==community && e.location.translations.en.name==region)
+    stations = stations.map((e) => {
+      e.data = e.translations.hy;
+      e.location.name = e.location.translations.hy.name;
+      e.location.parent = e.location.parent.translations.hy.name;
+      delete e.translations;
+      delete e.location.translations;
+      delete e.location.parent.translations;
+
+      return e;
+    })
+    return res.status(200).json({ stations });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+};
 const GetServicesForPay = async (req, res) => {
   try {
     const { techNumber } = req.body;
@@ -57,7 +91,10 @@ const GetServicesForPay = async (req, res) => {
         .json({ successs: false, message: "techNumber cannot be null." });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
-    if (!Car) return res.status(404).json({ successs: false, message: "Car was not found." });
+    if (!Car)
+      return res
+        .status(404)
+        .json({ successs: false, message: "Car was not found." });
     let services = await fetch(
       "https://api.onepay.am/autoclub/payment-service/services",
       {
@@ -87,12 +124,15 @@ const GetServicesForPay = async (req, res) => {
   }
 };
 
-const GetOrders = async(req,res)=>{
+const GetOrders = async (req, res) => {
   try {
     const { id } = req.params;
 
     const User = await Users.findOne({ where: { id } });
-    if(!User) return res.status(404).json({success:false,message:"User not found!"})
+    if (!User)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found!" });
 
     let payInfo = await fetch(
       "https://api.onepay.am/autoclub/payment-service/orders",
@@ -105,8 +145,8 @@ const GetOrders = async(req,res)=>{
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-          userID:id
-      }),
+          userID: id,
+        }),
       }
     );
 
@@ -115,25 +155,22 @@ const GetOrders = async(req,res)=>{
     }
     payInfo = await payInfo.json();
 
-   return res.status(200).json({success:true,payInfo})
-
+    return res.status(200).json({ success: true, payInfo });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
-}
+};
 
 const GetPaymentURLArca = async (req, res) => {
   try {
     const { techNumber, station, services } = req.body;
 
     if (!techNumber || !station)
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "techNumber,userID and station are undefined",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "techNumber,userID and station are undefined",
+      });
     const User = await Users.findOne({
       include: { model: Cars, where: { carTechNumber: techNumber } },
     });
@@ -201,17 +238,15 @@ const GetPaymentURLArca = async (req, res) => {
   }
 };
 
-const GetPaymentURLIdram = async (req,res)=>{
+const GetPaymentURLIdram = async (req, res) => {
   try {
     // const {}
-  } catch (error) {
-    
-  }
-}
+  } catch (error) {}
+};
 module.exports = {
   GetStatons,
   GetServicesForPay,
   GetPaymentURLArca,
-  GetOrders
+  GetOrders,
+  GetAllStatons
 };
-
