@@ -180,12 +180,22 @@ const getUserByCarNumber = async (req,res)=>{
   }
 }
 
+const GetCount  = async (req,res)=>{
+  try {
+    const count = await Cars.count()
 
+    return res.status(200).json({success:true,count})
+  }  catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+}
 
 module.exports = {
   SearchCar,
   AddCar,
   DeleteCar,
   UpdateCarVehicleType,
-  getUserByCarNumber
+  getUserByCarNumber,
+  GetCount
 };

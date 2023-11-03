@@ -7,6 +7,7 @@ router.post("/addCar",controller.AddCar)
 router.patch("/updateCarVehicleType",controller.UpdateCarVehicleType)
 router.delete("/deleteCar/:techNumber",controller.DeleteCar)
 router.get("/getUserByCarNumber/:carNumber",controller.getUserByCarNumber)
+router.get("/getCount",controller.GetCount)
 
 
 module.exports = router;
