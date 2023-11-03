@@ -93,8 +93,10 @@ const AddCar = async (req, res) => {
     if (!Array.isArray(carData.vehicle_types)) {
       carData.vehicle_types = Object.values(carData.vehicle_types);
     }
-    User.fullName = carData.full_name;
-    await User.save();
+    if(!User.fullName){
+      User.fullName = carData.full_name;
+      await User.save();
+    }
     await Cars.create({
       carTechNumber: techNumber,
       userId: User.id,
