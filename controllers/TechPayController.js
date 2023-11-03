@@ -126,9 +126,9 @@ const GetServicesForPay = async (req, res) => {
 
 const GetOrders = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { userID,car_reg_no } = req.body;
 
-    const User = await Users.findOne({ where: { id } });
+    const User = await Users.findOne({ where: { id:userID } });
     if (!User)
       return res
         .status(404)
@@ -145,7 +145,8 @@ const GetOrders = async (req, res) => {
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-          userID: id,
+          userID,
+          car_reg_no,
         }),
       }
     );

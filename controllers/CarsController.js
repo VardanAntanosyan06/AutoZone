@@ -50,6 +50,7 @@ const SearchCar = async (req, res) => {
       .json({ success: false, message: "Something went wrong." });
   }
 };
+
 const AddCar = async (req, res) => {
   try {
     let { techNumber, phoneNumber } = req.body;
@@ -117,6 +118,7 @@ const AddCar = async (req, res) => {
       return res.status(500).json({ message: "Something went wrong." });
     }
 };
+
 const DeleteCar = async (req, res) => {
   try {
     const { techNumber } = req.params;
@@ -158,7 +160,6 @@ const UpdateCarVehicleType = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
-
 
 const getUserByCarNumber = async (req,res)=>{
   try {
