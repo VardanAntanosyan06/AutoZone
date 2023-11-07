@@ -103,6 +103,7 @@ const sendInspectionMessage = async () => {
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() + 5);
         
+        
         const User = await Users.findAll({
             attributes:['id','deviceToken'],
             include:{

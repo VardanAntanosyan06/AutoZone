@@ -80,7 +80,7 @@ const AddCar = async (req, res) => {
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-          userID: 32,
+          userID: User.id,
           phone: phoneNumber,
           documentNumber: techNumber,
         }),
@@ -161,6 +161,29 @@ const UpdateCarVehicleType = async (req, res) => {
   }
 };
 
+const UpdateCarInspection = async (req, res) => {
+  try {
+    const { techNumber,inspection } = req.body;
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
+
+    if (!Car)
+      return res
+        .status(404)
+        .json({ success: false, message: "Car not found!" });
+
+    Car.inspection = inspection;
+
+    await Car.save();
+    return res
+      .status(200)
+      .json({ success: true, message: "The Car was updated successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+};
+
+
 const getUserByCarNumber = async (req,res)=>{
   try {
     let {carNumber} = req.params;
@@ -197,5 +220,6 @@ module.exports = {
   DeleteCar,
   UpdateCarVehicleType,
   getUserByCarNumber,
-  GetCount
+  GetCount,
+  UpdateCarInspection
 };
