@@ -68,9 +68,10 @@ const GetAllStatons = async (req, res) => {
     stationsWithAdditionalLocation = stationsWithAdditionalLocation.filter(e=>e.additional_location.translations.en.name==region && e.additional_location.parent.translations.en.name==community).map(e=> e.additional_location)
 
     stations = stations.filter((e)=>(e.location.parent.translations.en.name==community && e.location.translations.en.name==region))
+    // console.log(stationsWithAdditionalLocation);
     stations = stations.map((e) => {
-      e.additional_location!=null ? stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
-      
+      e.additional_location!=null || (stationsWithAdditionalLocation && stationsWithAdditionalLocation.length>0 && e.location.translations.en.name == stationsWithAdditionalLocation[0].translations.en.name) ? e.additional_location!=null && stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
+
       e.data = e.translations.hy;
       e.location.name = e.location.translations.hy.name;
       e.location.parent = e.location.parent.translations.hy.name;
@@ -81,6 +82,7 @@ const GetAllStatons = async (req, res) => {
 
       return e;
     })
+    
     return res.status(200).json({ stations });
   } catch (error) {
     console.log(error);
