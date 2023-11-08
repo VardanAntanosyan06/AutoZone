@@ -69,8 +69,8 @@ const GetAllStatons = async (req, res) => {
 
     stations = stations.filter((e)=>(e.location.parent.translations.en.name==community && e.location.translations.en.name==region))
     stations = stations.map((e) => {
-      e.additional_location!=null && test ? stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
-
+      e.additional_location!=null ? stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
+      
       e.data = e.translations.hy;
       e.location.name = e.location.translations.hy.name;
       e.location.parent = e.location.parent.translations.hy.name;
