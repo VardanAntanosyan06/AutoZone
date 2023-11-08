@@ -64,12 +64,17 @@ const GetAllStatons = async (req, res) => {
       },
     });
     stations = await stations.json();
+    let stationsWithAdditionalLocation = stations.filter(e=> e.additional_location)
+    stationsWithAdditionalLocation = stationsWithAdditionalLocation.filter(e=>e.additional_location.translations.en.name==region && e.additional_location.parent.translations.en.name==community).map(e=> e.additional_location)
 
-    stations = stations.filter((e)=>e.location.parent.translations.en.name==community && e.location.translations.en.name==region)
+    stations = stations.filter((e)=>(e.location.parent.translations.en.name==community && e.location.translations.en.name==region))
     stations = stations.map((e) => {
+      e.additional_location!=null && test ? stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
+
       e.data = e.translations.hy;
       e.location.name = e.location.translations.hy.name;
       e.location.parent = e.location.parent.translations.hy.name;
+      e.additional_location = stationsWithAdditionalLocation 
       delete e.translations;
       delete e.location.translations;
       delete e.location.parent.translations;
