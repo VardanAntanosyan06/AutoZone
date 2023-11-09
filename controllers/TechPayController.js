@@ -52,37 +52,55 @@ const GetAllStatons = async (req, res) => {
   try {
     const { community, region } = req.body;
 
-    if(!community || !region) return res.status(403).json({success:false,message:"community or region cannot be empty"})
+    if (!community || !region)
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "community or region cannot be empty",
+        });
 
     let stations = await fetch("https://api.onepay.am/autoclub/partners", {
       method: "GET",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-      Authorization:
+        Authorization:
           "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
       },
     });
     stations = await stations.json();
-    let stationsWithAdditionalLocation = stations.filter(e=> e.additional_location)
-    stationsWithAdditionalLocation = stationsWithAdditionalLocation.filter(e=>e.additional_location.translations.en.name==region && e.additional_location.parent.translations.en.name==community).map(e=> e.additional_location)
-
-    stations = stations.filter((e)=>(e.location.parent.translations.en.name==community && e.location.translations.en.name==region))
-    // console.log(stationsWithAdditionalLocation);
+    let stationsWithAdditionalLocation = stations.filter(
+      (e) => e.additional_location
+    );
+    stationsWithAdditionalLocation = stationsWithAdditionalLocation.filter(
+      (e) =>
+        e.additional_location.translations.en.name == region &&
+        e.additional_location.parent.translations.en.name == community
+    );
+    stationsWithAdditionalLocation = stationsWithAdditionalLocation.map((e) => {
+      e.data = e.translations.hy;
+      e.additional_location = null;
+      delete e.translations;
+      return e;
+    });
+    stations = stations.filter(
+      (e) =>
+        e.location.parent.translations.en.name == community &&
+        e.location.translations.en.name == region
+    );
     stations = stations.map((e) => {
-      e.additional_location!=null || (stationsWithAdditionalLocation && stationsWithAdditionalLocation.length>0 && e.location.translations.en.name == stationsWithAdditionalLocation[0].translations.en.name) ? e.additional_location!=null && stationsWithAdditionalLocation.push(e.additional_location):stationsWithAdditionalLocation=null
-
       e.data = e.translations.hy;
       e.location.name = e.location.translations.hy.name;
       e.location.parent = e.location.parent.translations.hy.name;
-      e.additional_location = stationsWithAdditionalLocation 
+      e.additional_location = stationsWithAdditionalLocation;
       delete e.translations;
       delete e.location.translations;
       delete e.location.parent.translations;
 
       return e;
-    })
-    
+    });
+
     return res.status(200).json({ stations });
   } catch (error) {
     console.log(error);
@@ -133,9 +151,9 @@ const GetServicesForPay = async (req, res) => {
 
 const GetOrders = async (req, res) => {
   try {
-    const { userID,car_reg_no } = req.body;
+    const { userID, car_reg_no } = req.body;
 
-    const User = await Users.findOne({ where: { id:userID } });
+    const User = await Users.findOne({ where: { id: userID } });
     if (!User)
       return res
         .status(404)
@@ -256,5 +274,5 @@ module.exports = {
   GetServicesForPay,
   GetPaymentURLArca,
   GetOrders,
-  GetAllStatons
+  GetAllStatons,
 };
