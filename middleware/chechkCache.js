@@ -12,7 +12,7 @@ module.exports = function () {
         let userSession = await client.get(community+region);
         if(userSession){
             userSession = JSON.parse(userSession)
-            return res.status(200).json(userSession)
+            return res.status(200).json({stations:userSession})
         }
       next();
     } catch (e) {
