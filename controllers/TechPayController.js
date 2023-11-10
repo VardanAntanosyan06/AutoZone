@@ -2,6 +2,7 @@ const fetch = require("node-fetch");
 const { calculateDistance } = require("./lib");
 const { Cars } = require("../models");
 const { Users } = require("../models");
+const { createClient,setex } = require("redis");
 
 const GetStatons = async (req, res) => {
   try {
@@ -53,12 +54,10 @@ const GetAllStatons = async (req, res) => {
     const { community, region } = req.body;
 
     if (!community || !region)
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "community or region cannot be empty",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "community or region cannot be empty",
+      });
 
     let stations = await fetch("https://api.onepay.am/autoclub/partners", {
       method: "GET",
@@ -100,6 +99,16 @@ const GetAllStatons = async (req, res) => {
 
       return e;
     });
+
+    const client = await createClient()
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
+    stations = JSON.stringify(stations)
+
+    client.set(`${community+region}`, stations, (err) => {
+      if (err) {
+        throw err;
+      }})
 
     return res.status(200).json({ stations });
   } catch (error) {
