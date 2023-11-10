@@ -109,6 +109,7 @@ const GetAllStatons = async (req, res) => {
       if (err) {
         throw err;
       }})
+    stations = JSON.parse(stations)
 
     return res.status(200).json({ stations });
   } catch (error) {
