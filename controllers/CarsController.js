@@ -2,15 +2,17 @@ const { ARRAY } = require("sequelize");
 const { Users } = require("../models");
 const { Cars } = require("../models");
 const fetch = require("node-fetch");
+const { createClient } = require("redis");
 
 const SearchCar = async (req, res) => {
   try {
     let { techNumber, phoneNumber } = req.body;
 
     const User = await Users.findOne({ where: { phoneNumber } });
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
+    // if(Car) return res.status(200).json(Car)
     phoneNumber = phoneNumber.replace(/374/g, "0");
-
     if (!User)
       return res
         .status(404)
@@ -37,12 +39,38 @@ const SearchCar = async (req, res) => {
     if (!carDataResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
-    const carData = await carDataResponse.json();
+    let carData = await carDataResponse.json();
     if (!Array.isArray(carData.vehicle_types)) {
       carData.vehicle_types = Object.values(carData.vehicle_types);
     }
+    const client = await createClient()
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
+    carData = JSON.stringify(carData)
+
+    client.set(`${techNumber}`, carData, (err) => {
+      if (err) {
+        throw err;
+      }})
+    carData = JSON.parse(carData)
 
     return res.status(200).json({ success: true, carData });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+};
+
+const SearchExistingCar = async (req, res) => {
+  try {
+    let { techNumber } = req.body;
+
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
+
+    if(!Car) return res.status(404).json({success:false,message:"An existing car was not found."})
+    return res.status(200).json({ success: true, carData:Car });
   } catch (error) {
     console.log(error);
     return res
@@ -90,7 +118,7 @@ const AddCar = async (req, res) => {
     if (!carDataResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
-    const carData = await carDataResponse.json();
+    let carData = await carDataResponse.json();
     if (!Array.isArray(carData.vehicle_types)) {
       carData.vehicle_types = Object.values(carData.vehicle_types);
     }
@@ -217,6 +245,7 @@ const GetCount  = async (req,res)=>{
 module.exports = {
   SearchCar,
   AddCar,
+  SearchExistingCar,
   DeleteCar,
   UpdateCarVehicleType,
   getUserByCarNumber,
