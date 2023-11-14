@@ -3,7 +3,7 @@ var router = express.Router();
 const controller = require("../controllers/CarsController")
 const {checkCacheAuto} = require("../middleware/chechkCache")
 
-router.post("/search",controller.SearchCar)
+router.post("/search",checkCacheAuto(),controller.SearchCar)
 router.post("/SearchExisting",controller.SearchExistingCar)
 router.post("/addCar",controller.AddCar)
 router.patch("/updateCarVehicleType",controller.UpdateCarVehicleType)
