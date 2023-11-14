@@ -44,15 +44,16 @@ const SearchCar = async (req, res) => {
       carData.vehicle_types = Object.values(carData.vehicle_types);
     }
     const client = await createClient()
-    .on("error", (err) => console.log("Redis Client Error", err))
-    .connect();
-    carData = JSON.stringify(carData)
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
+    carData = JSON.stringify(carData);
 
     client.set(`${techNumber}`, carData, (err) => {
       if (err) {
         throw err;
-      }})
-    carData = JSON.parse(carData)
+      }
+    });
+    carData = JSON.parse(carData);
 
     return res.status(200).json({ success: true, carData });
   } catch (error) {
@@ -69,8 +70,11 @@ const SearchExistingCar = async (req, res) => {
 
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
-    if(!Car) return res.status(404).json({success:false,message:"An existing car was not found."})
-    return res.status(200).json({ success: true, carData:Car });
+    if (!Car)
+      return res
+        .status(404)
+        .json({ success: false, message: "An existing car was not found." });
+    return res.status(200).json({ success: true, carData: Car });
   } catch (error) {
     console.log(error);
     return res
@@ -83,11 +87,11 @@ const AddCar = async (req, res) => {
   try {
     let { techNumber, phoneNumber } = req.body;
 
-    techNumber = techNumber.toUpperCase()
+    techNumber = techNumber.toUpperCase();
     const User = await Users.findOne({ where: { phoneNumber } });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
-    phoneNumber = phoneNumber.replace(/374/g, "0");
-    if (Car)  
+
+    if (Car)
       return res.status(403).json({
         success: false,
         message: "Another user already aded the car.",
@@ -96,6 +100,39 @@ const AddCar = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
+
+    const client = await createClient()
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
+
+    let carInfo = await client.get(techNumber);
+    if (carInfo) {
+      carInfo = JSON.parse(carInfo);
+      if (!Array.isArray(carInfo.vehicle_types)) {
+        carInfo.vehicle_types = Object.values(carInfo.vehicle_types);
+      }
+      if (!User.fullName) {
+        User.fullName = carInfo.full_name;
+        await User.save();
+      }
+      await Cars.create({
+        carTechNumber: techNumber,
+        userId: User.id,
+        carNumber: carInfo.car_reg_no,
+        carMark: carInfo.car,
+        insuranceInfo: carInfo.insurance_info.insurance_name,
+        insuranceEndDate: carInfo.insurance_info.end_date,
+        inspection: new Date(carInfo.inspection).toISOString(),
+        serviceRequestId: carInfo.service_request_id,
+        vehicleTypeHy: carInfo.vehicle_type,
+        vehicleTypeEn: carInfo.vehicle_types[0].id,
+      });
+
+      return res.status(200).json({ success: true });
+      // return res.status(200).json( carInfo);
+    }
+
+    phoneNumber = phoneNumber.replace(/374/g, "0");
 
     const carDataResponse = await fetch(
       "https://api.onepay.am/autoclub/payment-service/select-vehicle",
@@ -122,7 +159,7 @@ const AddCar = async (req, res) => {
     if (!Array.isArray(carData.vehicle_types)) {
       carData.vehicle_types = Object.values(carData.vehicle_types);
     }
-    if(!User.fullName){
+    if (!User.fullName) {
       User.fullName = carData.full_name;
       await User.save();
     }
@@ -140,11 +177,10 @@ const AddCar = async (req, res) => {
     });
 
     return res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
   }
-    catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Something went wrong." });
-    }
 };
 
 const DeleteCar = async (req, res) => {
@@ -191,7 +227,7 @@ const UpdateCarVehicleType = async (req, res) => {
 
 const UpdateCarInspection = async (req, res) => {
   try {
-    const { techNumber,inspection } = req.body;
+    const { techNumber, inspection } = req.body;
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
     if (!Car)
@@ -211,37 +247,37 @@ const UpdateCarInspection = async (req, res) => {
   }
 };
 
-
-const getUserByCarNumber = async (req,res)=>{
+const getUserByCarNumber = async (req, res) => {
   try {
-    let {carNumber} = req.params;
+    let { carNumber } = req.params;
 
-    
-    carNumber = carNumber.toUpperCase()
+    carNumber = carNumber.toUpperCase();
     const User = await Users.findOne({
       include: { model: Cars, where: { carNumber } },
 
-      attributes:['id','phoneNumber','fullName','gmail','deviceToken']
+      attributes: ["id", "phoneNumber", "fullName", "gmail", "deviceToken"],
     });
-    if(!User) return res.status(404).json({success:false,message:"User not found!"})
-    return res.status(200).json({success:true,User})
-  }  catch (error) {
+    if (!User)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found!" });
+    return res.status(200).json({ success: true, User });
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
-}
+};
 
-const GetCount  = async (req,res)=>{
+const GetCount = async (req, res) => {
   try {
-    const count = await Cars.count()
+    const count = await Cars.count();
 
-    return res.status(200).json({success:true,count})
-  }  catch (error) {
+    return res.status(200).json({ success: true, count });
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
-}
-
+};
 
 module.exports = {
   SearchCar,
@@ -251,5 +287,5 @@ module.exports = {
   UpdateCarVehicleType,
   getUserByCarNumber,
   GetCount,
-  UpdateCarInspection
+  UpdateCarInspection,
 };
