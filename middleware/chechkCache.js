@@ -41,7 +41,7 @@ const checkCacheAuto = async (req, res, next) => {
     let carData = await client.get(techNumber);
     if (carData) {
       carData = JSON.parse(carData);
-      return res.status(200).json({ carData });
+      return res.status(200).json({ success: true, carData  });
     }
     next();
   } catch (e) {
