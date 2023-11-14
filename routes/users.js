@@ -3,6 +3,7 @@ var router = express.Router();
 const controller = require("../controllers/UserController")
 
 router.get("/getData",controller.GetUserData)
+router.get("/GetDAHKInfo",controller.GetDAHKInfo)
 router.post("/register",controller.LoginOrRegister)
 router.post("/sendSMSCodeForVerification",controller.SendSMSCodeForVerification)
 router.post("/verification",controller.Verification)

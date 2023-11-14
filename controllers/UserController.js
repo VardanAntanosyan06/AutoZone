@@ -2,12 +2,14 @@ const { Users } = require("../models");
 const { Cars } = require("../models");
 const { Complaints } = require("../models");
 const moment = require("moment");
-const { v4 } = require('uuid')
+const { v4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-const fs = require("fs")
+const fs = require("fs");
 const { sendSMSCode } = require("../controllers/lib");
+const fetch = require("node-fetch");
+const { createClient } = require("redis");
 
 const LoginOrRegister = async (req, res) => {
   try {
@@ -147,7 +149,7 @@ const CreateOrUpdatePin = async (req, res) => {
     if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
-        attributes: ["id", "fullName", "gmail", "phoneNumber","isVerified"],
+        attributes: ["id", "fullName", "gmail", "phoneNumber", "isVerified"],
         where: { token },
       });
       if (User && User.isVerified) {
@@ -342,7 +344,7 @@ const GetUserData = async (req, res) => {
     if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
-        attributes: ["id", "fullName", "gmail", "phoneNumber","image"],
+        attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
         where: { token },
         include: [Cars],
       });
@@ -379,20 +381,23 @@ const UpdateUserImage = async (req, res) => {
       if (User) {
         let UserIcon = User.image;
         if (UserIcon) {
-          UserIcon = UserIcon.split(process.env.HOST)[1]
+          UserIcon = UserIcon.split(process.env.HOST)[1];
           console.log(UserIcon);
-          fs.unlink(path.resolve(__dirname, "..", "static", UserIcon), (err) => {
-            if (err) {
-              throw err;
+          fs.unlink(
+            path.resolve(__dirname, "..", "static", UserIcon),
+            (err) => {
+              if (err) {
+                throw err;
+              }
             }
-          })
+          );
         }
 
         const type = image.mimetype.split("/")[1];
         const fileName = v4() + "." + type;
         image.mv(path.resolve(__dirname, "..", "static", fileName));
-        User.image = process.env.HOST + fileName
-        await User.save()
+        User.image = process.env.HOST + fileName;
+        await User.save();
         return res.json({ success: true, image: process.env.HOST + fileName });
       }
       return res
@@ -406,7 +411,7 @@ const UpdateUserImage = async (req, res) => {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
-}
+};
 
 const sendComplaint = async (req, res) => {
   try {
@@ -422,8 +427,8 @@ const sendComplaint = async (req, res) => {
         await Complaints.create({
           senderId: User.id,
           reciverId,
-          complaint
-        })
+          complaint,
+        });
         return res.json({ success: true });
       }
       return res
@@ -441,7 +446,74 @@ const sendComplaint = async (req, res) => {
       return res.status(500).json({ message: "Something went wrong." });
     }
   }
-}
+};
+
+const GetDAHKInfo = async (req, res) => {
+  try {
+    let { authorization: token } = req.headers;
+    const client = await createClient()
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
+    if (token) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id"],
+        include: [{ model: Cars, attributes: ["carNumber"] }],
+        where: { token },
+      });
+
+      if (User) {
+        let cars = User.Cars.map((e) => e.carNumber);
+        cars = cars.join();
+
+        let carInfo = await client.get(cars);
+        if (carInfo) {
+          carInfo = JSON.parse(carInfo);
+          return res.status(200).json( carInfo);
+        }
+
+        let data = await fetch(
+          `https://api.onepay.am/autoclub/dahk?techNumber=${cars}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization:
+                "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+            },
+          }
+        );
+        data = await data.json();
+        let carData = JSON.stringify(data);
+        // cars = cars.replace(",","")
+          console.log(cars);
+        client.set(`${cars}`, carData, (err) => {
+          if (err) {
+            throw err;
+          }
+        });
+        // data = JSON.parse(carData)
+        // data = Object.values(data)
+        return res.json(data);
+      }
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found!" });
+    }
+    return res
+      .status(403)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    if (error.name == "JsonWebTokenError") {
+      return res.status(403).json({ success: false, message: "Invalid token" });
+    } else {
+      console.log(error);
+      return res.status(500).json({ message: "Something went wrong." });
+    }
+  }
+};
+
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -453,5 +525,6 @@ module.exports = {
   UpdateUserData,
   GetUserData,
   UpdateUserImage,
-  sendComplaint
+  sendComplaint,
+  GetDAHKInfo,
 };
