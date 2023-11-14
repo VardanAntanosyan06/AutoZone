@@ -346,7 +346,7 @@ const GetUserData = async (req, res) => {
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
         where: { token },
-        include: [Cars],
+        include:{model:Cars,order:[['id']]},
       });
       if (User) {
         return res.json({ success: true, User });
