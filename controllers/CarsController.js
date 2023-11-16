@@ -206,7 +206,6 @@ const UpdateCarVehicleType = async (req, res) => {
     const { name, id, techNumber } = req.body;
     console.log(techNumber);
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
-    console.log(Car);
     if (!Car)
       return res
         .status(404)
@@ -216,6 +215,25 @@ const UpdateCarVehicleType = async (req, res) => {
     Car.vehicleTypeEn = id;
 
     await Car.save();
+
+    await fetch(
+      "https://api.onepay.am/autoclub/payment-service/select-station",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+        },
+        body: JSON.stringify({
+          service_request_id: Car.serviceRequestId,
+          station:1,
+          vehicle_types: id,
+        }),
+      }
+    );
+
     return res
       .status(200)
       .json({ success: true, message: "The Car was updated successfully." });
