@@ -121,8 +121,9 @@ const sendInspectionMessage = async () => {
         
         await Promise.all(User.map(async (e)=>{
             const message = {
-                notification: {
-                    body: `${e.Cars[0].carNumber} մեքենայի տեխզննման ժամկետն ավարտվում է ${formatDate(new Date(e.Cars[0].inspection))}.-ին:`,
+              notification: {
+                    title:"Տեխզննման ժամկետ",
+                    body: `${e.Cars[0].carNumber} մեքենայի տեխզննման ժամկետն ավարտվում է ${formatDate(new Date(e.Cars[0].inspection))}թ.-ին:`,
                 },
                 token: e.deviceToken
             
