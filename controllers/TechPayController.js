@@ -211,10 +211,10 @@ const GetPaymentURLArca = async (req, res) => {
       include: { model: Cars, where: { carTechNumber: techNumber } },
     });
     if (!User)
-      return res
-        .status(403)
-        .json({ success: false, message: "You've inserted invalid data." });
-
+    return res
+  .status(403)
+  .json({ success: false, message: "You've inserted invalid data." });
+  
     await fetch(
       "https://api.onepay.am/autoclub/payment-service/select-station",
       {
@@ -259,8 +259,14 @@ const GetPaymentURLArca = async (req, res) => {
           station,
           services,
         }),
+
       }
-    );
+      );
+      console.log(User.Cars[0].serviceRequestId,
+        station,
+        services,User.Cars[0].serviceRequestId,
+        station,
+        User.Cars[0].vehicleTypeEn,User.Cars.length);
 
     if (!paymentResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
