@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { calculateDistance } = require("./lib");
 const { Cars } = require("../models");
 const { Users } = require("../models");
-const { createClient,setex } = require("redis");
+const { createClient, setex } = require("redis");
 
 const GetStatons = async (req, res) => {
   try {
@@ -101,15 +101,16 @@ const GetAllStatons = async (req, res) => {
     });
 
     const client = await createClient()
-    .on("error", (err) => console.log("Redis Client Error", err))
-    .connect();
-    stations = JSON.stringify(stations)
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
+    stations = JSON.stringify(stations);
 
-    client.set(`${community+region}`, stations, (err) => {
+    client.set(`${community + region}`, stations, (err) => {
       if (err) {
         throw err;
-      }})
-    stations = JSON.parse(stations)
+      }
+    });
+    stations = JSON.parse(stations);
 
     return res.status(200).json({ stations });
   } catch (error) {
@@ -211,10 +212,10 @@ const GetPaymentURLArca = async (req, res) => {
       include: { model: Cars, where: { carTechNumber: techNumber } },
     });
     if (!User)
-    return res
-  .status(403)
-  .json({ success: false, message: "You've inserted invalid data." });
-  
+      return res
+        .status(403)
+        .json({ success: false, message: "You've inserted invalid data." });
+
     await fetch(
       "https://api.onepay.am/autoclub/payment-service/select-station",
       {
@@ -244,6 +245,7 @@ const GetPaymentURLArca = async (req, res) => {
         request: User.Cars[0].serviceRequestId,
       }),
     });
+    
     let paymentResponse = await fetch(
       "https://api.onepay.am/autoclub/payment-service/pay",
       {
@@ -259,15 +261,9 @@ const GetPaymentURLArca = async (req, res) => {
           station,
           services,
         }),
-
       }
-      );
-      console.log(User.Cars[0].serviceRequestId,
-        station,
-        services,User.Cars[0].serviceRequestId,
-        station,
-        User.Cars[0].vehicleTypeEn,User.Cars.length);
-
+    );
+    console.log(User.Cars[0].serviceRequestId,station,User.Cars[0].vehicleTypeEn,services);
     if (!paymentResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
