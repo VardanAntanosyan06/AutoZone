@@ -340,13 +340,13 @@ const UpdateUserData = async (req, res) => {
 const GetUserData = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
-
-    if (token) {
+                                                                                                                                                                                                                                                                                                                                                                                                    
+    if (token)                                                                                                                                                              {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
         where: { token },
-        include:{model:Cars,order:[['id']]},
+        include:{model:Cars,order:[['createdAt']]},
       });
       if (User) {
         return res.json({ success: true, User });
