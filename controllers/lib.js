@@ -1,9 +1,11 @@
 const fetch = require("node-fetch");
-const {Users} = require("../models")
-const {Cars} = require("../models")
+const { Users } = require("../models");
+const { Cars } = require("../models");
 const serviceAccount = require("../public/jsons/google-services.json");
 const admin = require("firebase-admin");
-const {Op} = require("sequelize")
+const { Op } = require("sequelize");
+const mysql = require("mysql2");
+
 
 const sendSMSCode = async (phoneNumber, subject, text) => {
   //working API
@@ -84,91 +86,115 @@ const getAlllocations = async (req, res) => {
   }
 };
 function formatDate(date) {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed, so we add 1.
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are 0-indexed, so we add 1.
   const year = date.getFullYear();
   return `${day}.${month}.${year}`;
 }
 
-
 const sendInspectionMessage = async () => {
-    try {
-        if (!admin.apps.length) {
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
-            });
-        }
-        const currentDate = new Date();
-
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + 5);
-        
-        
-        const User = await Users.findAll({
-            attributes:['id','deviceToken'],
-            include:{
-                model:Cars,
-                where: {
-                    inspection: {
-                        [Op.and]: {
-                            [Op.gte]: currentDate,
-                            [Op.lte]: targetDate,
-                        },
-                    },
-                },
-            }
-        })
-        
-        await Promise.all(User.map(async (e)=>{
-            const message = {
-              notification: {
-                    title:"Տեխզննման ժամկետ",
-                    body: `${e.Cars[0].carNumber} մեքենայի տեխզննման ժամկետն ավարտվում է ${formatDate(new Date(e.Cars[0].inspection))}թ.-ին:`,
-                },
-                token: e.deviceToken
-            
-            };
-          
-            await admin.messaging().send(message);
-        }))
-    } catch (error) {
-        console.error('Error sending GET request:', error);
+  try {
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
     }
+    const currentDate = new Date();
+
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 5);
+
+    const User = await Users.findAll({
+      attributes: ["id", "deviceToken"],
+      include: {
+        model: Cars,
+        where: {
+          inspection: {
+            [Op.and]: {
+              [Op.gte]: currentDate,
+              [Op.lte]: targetDate,
+            },
+          },
+        },
+      },
+    });
+
+    await Promise.all(
+      User.map(async (e) => {
+        const message = {
+          notification: {
+            title: "Տեխզննման ժամկետ",
+            body: `${
+              e.Cars[0].carNumber
+            } մեքենայի տեխզննման ժամկետն ավարտվում է ${formatDate(
+              new Date(e.Cars[0].inspection)
+            )}թ.-ին:`,
+          },
+          token: e.deviceToken,
+        };
+
+        await admin.messaging().send(message);
+      })
+    );
+  } catch (error) {
+    console.error("Error sending GET request:", error);
+  }
 };
 
 const sendPaymentMessage = async () => {
   try {
-      if (!admin.apps.length) {
-          admin.initializeApp({
-              credential: admin.credential.cert(serviceAccount),
-          });
-      }
-      const currentDate = new Date();
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+    }
+    // create the connection to database
+    const connection = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      database: "onepay",
+      password:"evywS3K6RJB8~>.^"
+    });
 
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() + 5);
+    // simple query
+    connection.query(
+      'SELECT * FROM `orders` WHERE `is_autoclub` =1;',
+      function (err, results, fields) {
+        console.log(results); // results contains rows returned by server
+        console.log(fields); // fields contains extra meta data about results, if available
+        if(err){
+          console.log(err);
+        }
+      }
+      );
       
-      const User = await Users.findAll({attributes:['id','deviceToken']})
-      
-      await Promise.all(User.map(async (e)=>{
-          const message = {
-            notification: {
-                  title:"Ժամկետի ավարտ",
-                  body: `${e.Cars[0].carNumber} մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
-              },
-              token: e.deviceToken
-          };
-        
-          await admin.messaging().send(message);
-      }))
+
+    // targetDate.setDate(targetDate.getDate() + 5);
+
+    // const User = await Users.findAll({ attributes: ["id", "deviceToken"] });
+
+    // await Promise.all(
+    //   User.map(async (e) => {
+    //     const message = {
+    //       notification: {
+    //         title: "Ժամկետի ավարտ",
+    //         body: `${e.Cars[0].carNumber} մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
+    //       },
+    //       token: e.deviceToken,
+    //     };
+
+    //     await admin.messaging().send(message);
+    //   })
+    // );
   } catch (error) {
-      console.error('Error sending GET request:', error);
+    console.error("Error sending GET request:", error);
   }
 };
 
+sendPaymentMessage()
 module.exports = {
   sendSMSCode,
   calculateDistance,
   getAlllocations,
-  sendInspectionMessage
+  sendInspectionMessage,
 };
