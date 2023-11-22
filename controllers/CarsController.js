@@ -29,9 +29,9 @@ const SearchCar = async (req, res) => {
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-          userID: User.id,
-          phone: phoneNumber,
-          documentNumber: techNumber,
+            userID: User.id,
+            phone: phoneNumber,
+            documentNumber: techNumber,
         }),
       }
     );

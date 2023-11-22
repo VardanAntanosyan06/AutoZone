@@ -11,6 +11,8 @@ const { sendSMSCode } = require("../controllers/lib");
 const fetch = require("node-fetch");
 const { createClient } = require("redis");
 
+const sharp = require("sharp");
+
 const LoginOrRegister = async (req, res) => {
   try {
     const { phoneNumber } = req.body;
@@ -340,8 +342,8 @@ const UpdateUserData = async (req, res) => {
 const GetUserData = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
-                                                                                                                                                                                                                                                                                                                                                                                                    
-    if (token)                                                                                                                                                              {
+
+    if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
@@ -400,10 +402,35 @@ const UpdateUserImage = async (req, res) => {
 
         const type = image.mimetype.split("/")[1];
         const fileName = v4() + "." + type;
-        image.mv(path.resolve(__dirname, "..", "static", fileName));
-        User.image = process.env.HOST + fileName;
+        await image.mv(path.resolve(__dirname, "..", "static", fileName));
+
+        const inputImagePath = `static/${fileName}`;
+        const outputImagePath = `static/compressed-${fileName}`;
+        const compressionQuality = 40;
+
+        sharp(inputImagePath)
+          .jpeg({ quality: compressionQuality })
+          .toFile(outputImagePath, (err, info) => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log(
+                `Image compressed successfully. New file: ${outputImagePath}`
+              );
+              fs.unlink(
+                path.resolve(__dirname, "..", "static", fileName),
+                (err) => {
+                  if (err) {
+                    throw err;
+                  }
+                }
+              );
+            }
+          });
+
+        User.image = process.env.HOST + `compressed-${fileName}`;
         await User.save();
-        return res.json({ success: true, image: process.env.HOST + fileName });
+        return res.json({ success: true, image: User.image });
       }
       return res
         .status(401)
@@ -457,8 +484,8 @@ const GetDAHKInfo = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
     const client = await createClient()
-    .on("error", (err) => console.log("Redis Client Error", err))
-    .connect();
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
     if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
@@ -474,7 +501,7 @@ const GetDAHKInfo = async (req, res) => {
         let carInfo = await client.get(cars);
         if (carInfo) {
           carInfo = JSON.parse(carInfo);
-          return res.status(200).json( carInfo);
+          return res.status(200).json(carInfo);
         }
 
         let data = await fetch(
@@ -492,7 +519,7 @@ const GetDAHKInfo = async (req, res) => {
         data = await data.json();
         let carData = JSON.stringify(data);
         // cars = cars.replace(",","")
-          console.log(cars);
+        console.log(cars);
         client.set(`${cars}`, carData, (err) => {
           if (err) {
             throw err;

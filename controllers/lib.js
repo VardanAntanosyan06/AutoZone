@@ -136,6 +136,36 @@ const sendInspectionMessage = async () => {
     }
 };
 
+const sendPaymentMessage = async () => {
+  try {
+      if (!admin.apps.length) {
+          admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount),
+          });
+      }
+      const currentDate = new Date();
+
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + 5);
+      
+      const User = await Users.findAll({attributes:['id','deviceToken']})
+      
+      await Promise.all(User.map(async (e)=>{
+          const message = {
+            notification: {
+                  title:"Ժամկետի ավարտ",
+                  body: `${e.Cars[0].carNumber} մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
+              },
+              token: e.deviceToken
+          };
+        
+          await admin.messaging().send(message);
+      }))
+  } catch (error) {
+      console.error('Error sending GET request:', error);
+  }
+};
+
 module.exports = {
   sendSMSCode,
   calculateDistance,
