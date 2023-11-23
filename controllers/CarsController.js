@@ -126,7 +126,7 @@ const AddCar = async (req, res) => {
         insuranceEndDate: new Date(carInfo.insurance_info.end_date)!="Invalid Date" ? new Date(carInfo.inspection).toISOString():null,
         inspection: new Date(carInfo.inspection).toISOString(),
         serviceRequestId: carInfo.service_request_id,
-        vehicleTypeHy: carInfo.vehicle_type,
+        vehicleTypeHy: carInfo.vehicle_type ="ԿԻՍԱԿՑՈՐԴ" ?"Կցորդ" : carInfo.vehicle_type,
         vehicleTypeEn: carInfo.vehicle_types[0].id,
       });
       
