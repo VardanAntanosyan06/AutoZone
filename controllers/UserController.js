@@ -404,31 +404,31 @@ const UpdateUserImage = async (req, res) => {
         const fileName = v4() + "." + type;
         await image.mv(path.resolve(__dirname, "..", "static", fileName));
 
-        const inputImagePath = `static/${fileName}`;
-        const outputImagePath = `static/compressed-${fileName}`;
-        const compressionQuality = 40;
+        // const inputImagePath = `static/${fileName}`;
+        // const outputImagePath = `static/compressed-${fileName}`;
+        // const compressionQuality = 40;
 
-        sharp(inputImagePath)
-          .jpeg({ quality: compressionQuality })
-          .toFile(outputImagePath, (err, info) => {
-            if (err) {
-              console.error(err);
-            } else {
-              console.log(
-                `Image compressed successfully. New file: ${outputImagePath}`
-              );
-              fs.unlink(
-                path.resolve(__dirname, "..", "static", fileName),
-                (err) => {
-                  if (err) {
-                    throw err;
-                  }
-                }
-              );
-            }
-          });
+        // sharp(inputImagePath)
+        //   .jpeg({ quality: compressionQuality })
+        //   .toFile(outputImagePath, (err, info) => {
+        //     if (err) {
+        //       console.error(err);
+        //     } else {
+        //       console.log(
+        //         `Image compressed successfully. New file: ${outputImagePath}`
+        //       );
+        //       fs.unlink(
+        //         path.resolve(__dirname, "..", "static", fileName),
+        //         (err) => {
+        //           if (err) {
+        //             throw err;
+        //           }
+        //         }
+        //       );
+        //     }
+        //   });
 
-        User.image = process.env.HOST + `compressed-${fileName}`;
+        User.image = process.env.HOST + fileName;
         await User.save();
         return res.json({ success: true, image: User.image });
       }

@@ -191,10 +191,10 @@ const sendPaymentMessage = async () => {
   }
 };
 
-sendPaymentMessage()
 module.exports = {
   sendSMSCode,
   calculateDistance,
   getAlllocations,
   sendInspectionMessage,
+  sendPaymentMessage
 };
