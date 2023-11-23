@@ -162,9 +162,9 @@ const sendPaymentMessage = async (req,res) => {
         title: "Վճարումն հաստատվել է",
         body: `71LS001 մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
       },
-      token: "cKQX8rURRFGbMFQte3aL1K:APA91bFia3eVPXBGE7zG_VEaptPCsTyfmAbGIV7bkRTnBPu5Zbg1tr9TAxFOwG760kVxtOCzB9PY-97UtqPzUf9tYuKIMYD1wLDRyuR-wPHbhJv3sT8PIqi1-xLWIMxbjarw2yVijeVG",
+      token: "d_I8MZVZR8GVUq4jW-cZnh:APA91bHrVUZAbjelN5NRfq7N9Z2xPu02TvPCB__CBP5A1bOPNma0naKY_YYe7xe3p58kexS8gXxAqR5EPB0qyF__NFPItQjBl-HVJM7NYl0luTDl3u8Wqx7MPV3JnGkSqEu73V3NB7lt",
     };
-
+    
     await admin.messaging().send(message);
     connection.query(
       
