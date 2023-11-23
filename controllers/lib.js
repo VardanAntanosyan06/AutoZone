@@ -168,7 +168,7 @@ const sendPaymentMessage = async (req,res) => {
     await admin.messaging().send(message);
     connection.query(
       
-      'SELECT * FROM `orders` WHERE `is_autoclub` =1;',
+      'SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;',
       function (err, results, fields) {
         if(err){
           return res.json(err);
