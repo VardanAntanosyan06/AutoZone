@@ -157,35 +157,30 @@ const sendPaymentMessage = async () => {
     });
 
     // simple query
+    const message = {
+      notification: {
+        title: "Վճարումն հաստատվել է",
+        body: `71LS001 մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
+      },
+      token: "cKQX8rURRFGbMFQte3aL1K:APA91bFia3eVPXBGE7zG_VEaptPCsTyfmAbGIV7bkRTnBPu5Zbg1tr9TAxFOwG760kVxtOCzB9PY-97UtqPzUf9tYuKIMYD1wLDRyuR-wPHbhJv3sT8PIqi1-xLWIMxbjarw2yVijeVG",
+    };
+
+    await admin.messaging().send(message);
     connection.query(
+      
       'SELECT * FROM `orders` WHERE `is_autoclub` =1;',
       function (err, results, fields) {
+        if(err){
+          return res.json(err);
+        }
         console.log(results); // results contains rows returned by server
         console.log(fields); // fields contains extra meta data about results, if available
-        if(err){
-          console.log(err);
-        }
+        return res.json(results)
       }
       );
       
-
     // targetDate.setDate(targetDate.getDate() + 5);
-
     // const User = await Users.findAll({ attributes: ["id", "deviceToken"] });
-
-    // await Promise.all(
-    //   User.map(async (e) => {
-    //     const message = {
-    //       notification: {
-    //         title: "Ժամկետի ավարտ",
-    //         body: `${e.Cars[0].carNumber} մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
-    //       },
-    //       token: e.deviceToken,
-    //     };
-
-    //     await admin.messaging().send(message);
-    //   })
-    // );
   } catch (error) {
     console.error("Error sending GET request:", error);
   }
