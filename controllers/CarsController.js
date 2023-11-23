@@ -29,9 +29,9 @@ const SearchCar = async (req, res) => {
             "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
         },
         body: JSON.stringify({
-            userID: User.id,
-            phone: phoneNumber,
-            documentNumber: techNumber,
+          userID: User.id,
+          phone: phoneNumber,
+          documentNumber: techNumber,
         }),
       }
     );
@@ -105,29 +105,31 @@ const AddCar = async (req, res) => {
       .on("error", (err) => console.log("Redis Client Error", err))
       .connect();
 
-    let carInfo = await client.get(techNumber);
-    if (carInfo) {
-      carInfo = JSON.parse(carInfo);
+      let carInfo = await client.get(techNumber);
+      if (carInfo) {
+        carInfo = JSON.parse(carInfo);
       if (!Array.isArray(carInfo.vehicle_types)) {
         carInfo.vehicle_types = Object.values(carInfo.vehicle_types);
       }
+      
       if (!User.fullName) {
         User.fullName = carInfo.full_name;
         await User.save();
       }
-      await Cars.create({
+      // console.log();
+        await Cars.create({
         carTechNumber: techNumber,
         userId: User.id,
         carNumber: carInfo.car_reg_no,
         carMark: carInfo.car,
         insuranceInfo: carInfo.insurance_info.insurance_name,
-        insuranceEndDate: carInfo.insurance_info.end_date,
+        insuranceEndDate: new Date(carInfo.insurance_info.end_date)!="Invalid Date" ? new Date(carInfo.inspection).toISOString():null,
         inspection: new Date(carInfo.inspection).toISOString(),
         serviceRequestId: carInfo.service_request_id,
         vehicleTypeHy: carInfo.vehicle_type,
         vehicleTypeEn: carInfo.vehicle_types[0].id,
       });
-
+      
       return res.status(200).json({ success: true });
       // return res.status(200).json( carInfo);
     }
@@ -175,10 +177,10 @@ const AddCar = async (req, res) => {
       vehicleTypeHy: carData.vehicle_type,
       vehicleTypeEn: carData.vehicle_types[0].id,
     });
-
+    
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
@@ -228,7 +230,7 @@ const UpdateCarVehicleType = async (req, res) => {
         },
         body: JSON.stringify({
           service_request_id: Car.serviceRequestId,
-          station:1,
+          station: 1,
           vehicle_types: id,
         }),
       }
