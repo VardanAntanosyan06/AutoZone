@@ -141,7 +141,7 @@ const sendInspectionMessage = async () => {
   }
 };
 
-const sendPaymentMessage = async () => {
+const sendPaymentMessage = async (req,res) => {
   try {
     if (!admin.apps.length) {
       admin.initializeApp({
