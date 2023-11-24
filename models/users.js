@@ -36,11 +36,13 @@ module.exports = (sequelize, DataTypes) => {
 
   const Cars = sequelize.define("Cars");
   const Notifications = sequelize.define("Notifications");
-
+  const PaymentStatusOne = sequelize.define("PaymentStatusOne")
   Users.hasMany(Cars, {
     foreignKey: "userId",
   });
-
+  Users.hasMany(PaymentStatusOne, {
+    foreignKey: "phoneNumber",
+  });
 
   Users.hasMany(Notifications,{
     foreignKey:"senderId"

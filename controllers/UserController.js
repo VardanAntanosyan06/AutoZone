@@ -351,7 +351,7 @@ const GetUserData = async (req, res) => {
         include: [
           {
             model: Cars,
-            order: [["createdAt", "DESC"]],
+            order: [["id", "ASC"]],
           },
         ],
       });
@@ -480,7 +480,7 @@ const sendComplaint = async (req, res) => {
   }
 };
 
-const GetDAHKInfo = async (req, res) => {
+const GetDAHKInfo = async (req, res) => { 
   try {
     let { authorization: token } = req.headers;
     const client = await createClient()

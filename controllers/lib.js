@@ -5,7 +5,7 @@ const serviceAccount = require("../public/jsons/google-services.json");
 const admin = require("firebase-admin");
 const { Op } = require("sequelize");
 const mysql = require("mysql2");
-
+const { PaymentStatusOne } = require("../models");
 
 const sendSMSCode = async (phoneNumber, subject, text) => {
   //working API
@@ -141,46 +141,60 @@ const sendInspectionMessage = async () => {
   }
 };
 
-const sendPaymentMessage = async (req,res) => {
+const sendPaymentMessage = async (req, res) => {
   try {
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-    }
-    // create the connection to database
+    // if (!admin.apps.length) {
+    //   admin.initializeApp({
+    //     credential: admin.credential.cert(serviceAccount),
+    //   });
+    // }
+
     const connection = mysql.createConnection({
-      host: "localhost",
+      host: "161.97.129.124",
       user: "root",
       database: "onepay",
-      password:"evywS3K6RJB8~>.^"
+      password: "evywS3K6RJB8~>.^",
     });
 
-    // simple query
-    const message = {
-      notification: {
-        title: "Վճարումն հաստատվել է",
-        body: `71LS001 մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան`,
-      },
-      token: "d_I8MZVZR8GVUq4jW-cZnh:APA91bHrVUZAbjelN5NRfq7N9Z2xPu02TvPCB__CBP5A1bOPNma0naKY_YYe7xe3p58kexS8gXxAqR5EPB0qyF__NFPItQjBl-HVJM7NYl0luTDl3u8Wqx7MPV3JnGkSqEu73V3NB7lt",
-    };
-    
-    await admin.messaging().send(message);
+    // const message = {
+    //   notification: {
+    //     title: "Վճարումն հաստատված է",
+    //     body: `71LS001 մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+    //   },
+    //   token:
+    //     "d_I8MZVZR8GVUq4jW-cZnh:APA91bHrVUZAbjelN5NRfq7N9Z2xPu02TvPCB__CBP5A1bOPNma0naKY_YYe7xe3p58kexS8gXxAqR5EPB0qyF__NFPItQjBl-HVJM7NYl0luTDl3u8Wqx7MPV3JnGkSqEu73V3NB7lt",
+    // };
+
+    // // await admin.messaging().send(message);
+    // const requests = await Users.findAll({include:{
+    //   model:PaymentStatusOne
+    // }});
+
+    // if (requests.length > 0) {
+    //   Promise.all(
+    //     requests.map(async (request) => {
+    //       const users  = await Users.findAll({where:{phoneNumber:e.phoneNumber},attributes:['id','deviceToken']});
+    //       users.map((user)=>{
+            
+    //       })
+          
+    //     })
+    //   );
+    // }
     connection.query(
-      
-      'SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;',
-      function (err, results, fields) {
-        if(err){
-          return res.json(err);
+      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      function (err, results) {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({ message: "Something went wrong." });
         }
-        console.log(results); // results contains rows returned by server
-        console.log(fields); // fields contains extra meta data about results, if available
-        return res.json(results)
+        if (results.length > 0) {
+          // add to postgreSQL
+          return res.json(results);
+        }
+        return res.status(404).json({ message: "Request not found!" });
       }
-      );
-      
-    // targetDate.setDate(targetDate.getDate() + 5);
-    // const User = await Users.findAll({ attributes: ["id", "deviceToken"] });
+    );
   } catch (error) {
     console.error("Error sending GET request:", error);
   }
@@ -191,5 +205,5 @@ module.exports = {
   calculateDistance,
   getAlllocations,
   sendInspectionMessage,
-  sendPaymentMessage
+  sendPaymentMessage,
 };
