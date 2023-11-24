@@ -150,7 +150,7 @@ const sendPaymentMessage = async (req, res) => {
     // }
 
     const connection = mysql.createConnection({
-      host: "161.97.129.124",
+      host: "localhost",
       user: "root",
       database: "onepay",
       password: "evywS3K6RJB8~>.^",
