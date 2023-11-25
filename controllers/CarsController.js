@@ -350,7 +350,7 @@ const UpdateAllCardata = async (req, res) => {
       Car.inspection = new Date(carData.inspection).toISOString();
 
     await Car.save();
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true,inspection:Car.inspection });
   } catch (error) {
     console.log(error);
     return res
