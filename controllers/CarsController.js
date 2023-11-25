@@ -340,13 +340,14 @@ const UpdateAllCardata = async (req, res) => {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
     let carData = await carDataResponse.json();
-
-    (Car.insuranceInfo = carData.insurance_info.insurance_name),
-      (Car.insuranceEndDate =
+    // return res.json(carData)
+    
+    Car.insuranceInfo = carData.insurance_info.insurance_name,
+    Car.insuranceEndDate =
         new Date(carData.insurance_info.end_date) != "Invalid Date"
-          ? new Date(insurance_info.end_date).toISOString()
-          : null),
-      (Car.inspection = new Date(carData.inspection).toISOString());
+          ? new Date(carData.insurance_info.end_date).toISOString()
+          : null,
+      Car.inspection = new Date(carData.inspection).toISOString();
 
     await Car.save();
     return res.status(200).json({ success: true });
