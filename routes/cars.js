@@ -11,6 +11,6 @@ router.patch("/updateCarInspection",controller.UpdateCarInspection)
 router.delete("/deleteCar/:techNumber",controller.DeleteCar)
 router.get("/getUserByCarNumber/:carNumber",controller.getUserByCarNumber)
 router.get("/getCount",controller.GetCount)
-
+router.patch("/UpdateAllCardata",controller.UpdateAllCardata)
 
 module.exports = router;

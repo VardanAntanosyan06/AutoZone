@@ -24,7 +24,10 @@ module.exports = (sequelize, DataTypes) => {
 
   const Users = sequelize.define("Users")
 
-  PaymentStatusOne.hasOne(Users)
+  PaymentStatusOne.hasOne(Users,{ 
+    foreignKey: 'phoneNumber', 
+    targetKey: 'phoneNumber' 
+  })
 
   return PaymentStatusOne;
 };

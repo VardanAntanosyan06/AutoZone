@@ -149,12 +149,12 @@ const sendPaymentMessage = async (req, res) => {
     //   });
     // }
 
-    const connection = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      database: "onepay",
-      password: "evywS3K6RJB8~>.^",
-    });
+    // const connection = mysql.createConnection({
+    //   host: "localhost",
+    //   user: "root",
+    //   database: "onepay",
+    //   password: "evywS3K6RJB8~>.^",
+    // });
 
     // const message = {
     //   notification: {
@@ -166,21 +166,24 @@ const sendPaymentMessage = async (req, res) => {
     // };
 
     // // await admin.messaging().send(message);
-    // const requests = await Users.findAll({include:{
-    //   model:PaymentStatusOne
-    // }});
+    const requests = await Users.findAll({include:{
+      model:PaymentStatusOne
+    }});
 
-    // if (requests.length > 0) {
-    //  await Promise.all(
-    //     requests.map(async (request) => {
-    //       const users  = await Users.findAll({where:{phoneNumber:e.phoneNumber},attributes:['id','deviceToken']});
-    //       users.map((user)=>{
-    //         console.log(user);
-    //       })
+    if (requests.length > 0) {
+     await Promise.all(
+        requests.map(async (request) => {
+          const users  = await Users.findAll({where:{phoneNumber:request.phoneNumber},attributes:['id','deviceToken']});
+          users.map((user)=>{
+            console.log(requests.length);
+          })
           
-    //     })
-    //   );
-    // }
+        })
+      );
+    return res.json({success:true})
+
+    }
+    return res.json({success:true})
 
     connection.query(
       "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
@@ -190,10 +193,11 @@ const sendPaymentMessage = async (req, res) => {
           return res.status(500).json({ message: "Something went wrong." });
         }
         if (results.length > 0) {
-          return res.json(results)
           await Promise.all(results.map(async (e) => {
+            let phone  = e.phone.replace("0","374");
+
             await PaymentStatusOne.create({
-              phoneNumber: e.phone, 
+              phoneNumber: phone, 
               requestId: +e.id,
               station: +e.partner_id
             });

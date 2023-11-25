@@ -105,31 +105,36 @@ const AddCar = async (req, res) => {
       .on("error", (err) => console.log("Redis Client Error", err))
       .connect();
 
-      let carInfo = await client.get(techNumber);
-      if (carInfo) {
-        carInfo = JSON.parse(carInfo);
+    let carInfo = await client.get(techNumber);
+    if (carInfo) {
+      carInfo = JSON.parse(carInfo);
       if (!Array.isArray(carInfo.vehicle_types)) {
         carInfo.vehicle_types = Object.values(carInfo.vehicle_types);
       }
-      
+
       if (!User.fullName) {
         User.fullName = carInfo.full_name;
         await User.save();
       }
       // console.log();
-        await Cars.create({
+      await Cars.create({
         carTechNumber: techNumber,
         userId: User.id,
         carNumber: carInfo.car_reg_no,
         carMark: carInfo.car,
         insuranceInfo: carInfo.insurance_info.insurance_name,
-        insuranceEndDate: new Date(carInfo.insurance_info.end_date)!="Invalid Date" ? new Date(carInfo.inspection).toISOString():null,
+        insuranceEndDate:
+          new Date(carInfo.insurance_info.end_date) != "Invalid Date"
+            ? new Date(carInfo.inspection).toISOString()
+            : null,
         inspection: new Date(carInfo.inspection).toISOString(),
         serviceRequestId: carInfo.service_request_id,
-        vehicleTypeHy: carInfo.vehicle_type ="ԿԻՍԱԿՑՈՐԴ" ?"Կցորդ" : carInfo.vehicle_type,
+        vehicleTypeHy: (carInfo.vehicle_type = "ԿԻՍԱԿՑՈՐԴ"
+          ? "Կցորդ"
+          : carInfo.vehicle_type),
         vehicleTypeEn: carInfo.vehicle_types[0].id,
       });
-      
+
       return res.status(200).json({ success: true });
       // return res.status(200).json( carInfo);
     }
@@ -177,7 +182,7 @@ const AddCar = async (req, res) => {
       vehicleTypeHy: carData.vehicle_type,
       vehicleTypeEn: carData.vehicle_types[0].id,
     });
-    
+
     return res.status(200).json({ success: true });
   } catch (error) {
     // console.log(error);
@@ -299,6 +304,60 @@ const GetCount = async (req, res) => {
   }
 };
 
+const UpdateAllCardata = async (req, res) => {
+  try {
+    let { techNumber, phoneNumber } = req.body;
+
+    const User = await Users.findOne({ where: { phoneNumber } });
+    const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
+
+    // if(Car) return res.status(200).json(Car)
+    phoneNumber = phoneNumber.replace(/374/g, "0");
+    if (!User)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    const carDataResponse = await fetch(
+      "https://api.onepay.am/autoclub/payment-service/select-vehicle",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+        },
+        body: JSON.stringify({
+          userID: User.id,
+          phone: phoneNumber,
+          documentNumber: techNumber,
+        }),
+      }
+    );
+
+    if (!carDataResponse.ok) {
+      return res.status(500).json({ error: "Failed to fetch car data" });
+    }
+    let carData = await carDataResponse.json();
+
+    (Car.insuranceInfo = carData.insurance_info.insurance_name),
+      (Car.insuranceEndDate =
+        new Date(carData.insurance_info.end_date) != "Invalid Date"
+          ? new Date(insurance_info.end_date).toISOString()
+          : null),
+      (Car.inspection = new Date(carData.inspection).toISOString());
+
+    await Car.save();
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+};
+
 module.exports = {
   SearchCar,
   AddCar,
@@ -308,4 +367,5 @@ module.exports = {
   getUserByCarNumber,
   GetCount,
   UpdateCarInspection,
+  UpdateAllCardata
 };

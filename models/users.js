@@ -40,9 +40,9 @@ module.exports = (sequelize, DataTypes) => {
   Users.hasMany(Cars, {
     foreignKey: "userId",
   });
-  Users.hasMany(PaymentStatusOne, {
-    foreignKey: "phoneNumber",
-  });
+  Users.hasMany(PaymentStatusOne, 
+    { foreignKey: 'phoneNumber', sourceKey: 'phoneNumber' }
+  );
 
   Users.hasMany(Notifications,{
     foreignKey:"senderId"
