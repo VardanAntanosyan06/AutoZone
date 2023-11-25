@@ -166,31 +166,38 @@ const sendPaymentMessage = async (req, res) => {
     // };
 
     // // await admin.messaging().send(message);
-    // const requests = await Users.findAll({include:{
-    //   model:PaymentStatusOne
-    // }});
+    const requests = await Users.findAll({include:{
+      model:PaymentStatusOne
+    }});
 
-    // if (requests.length > 0) {
-    //   Promise.all(
-    //     requests.map(async (request) => {
-    //       const users  = await Users.findAll({where:{phoneNumber:e.phoneNumber},attributes:['id','deviceToken']});
-    //       users.map((user)=>{
-            
-    //       })
+    if (requests.length > 0) {
+     await Promise.all(
+        requests.map(async (request) => {
+          const users  = await Users.findAll({where:{phoneNumber:e.phoneNumber},attributes:['id','deviceToken']});
+          users.map((user)=>{
+            console.log(user);
+          })
           
-    //     })
-    //   );
-    // }
+        })
+      );
+    }
+
     connection.query(
       "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
-      function (err, results) {
+      async function (err, results) {
         if (err) {
           console.log(err);
           return res.status(500).json({ message: "Something went wrong." });
         }
         if (results.length > 0) {
-          // add to postgreSQL
-          return res.json(results);
+          await Promise.all(results.map(async (e) => {
+            await PaymentStatusOne.create({
+              phoneNumber: e.phone, 
+              requestId: e.id,
+              station: e.partner_id
+            });
+          }));
+          return res.status(200).json({ success: true });
         }
         return res.status(404).json({ message: "Request not found!" });
       }
