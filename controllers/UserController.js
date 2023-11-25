@@ -348,14 +348,21 @@ const GetUserData = async (req, res) => {
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
         where: { token },
-        include: [
-          {
-            model: Cars,
-            order: [["id", "ASC"]],
-          },
-        ],
+        // include: [
+        //   {
+        //     model: Cars,
+        //     order: [["id", "ASC"]],
+        //   },
+        // ],
       });
+      const Car = await Cars.findAll({
+        where:{userId:User.id},
+        order:[["id","ASC"]]
+      })
+
       if (User) {
+        // User['Cars'] = Car
+        User.setDataValue('Cars', Car);
         return res.json({ success: true, User });
       }
       return res

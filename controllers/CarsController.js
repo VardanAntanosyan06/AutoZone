@@ -308,7 +308,6 @@ const UpdateAllCardata = async (req, res) => {
   try {
     let { techNumber, phoneNumber } = req.body;
 
-    console.log(techNumber,phoneNumber,"+++++++++++++++++++++++++++++++++++++++++");
     const User = await Users.findOne({ where: { phoneNumber } });
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
 
