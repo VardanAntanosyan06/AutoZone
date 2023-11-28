@@ -154,12 +154,12 @@ const sendPaymentMessage = async (req, res) => {
     const db = admin.database();
     const rootRef = db.ref();
 
-    const connection = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      database: "onepay",
-      password: "evywS3K6RJB8~>.^",
-    });
+    // const connection = mysql.createConnection({
+    //   host: "localhost",
+    //   user: "root",
+    //   database: "onepay",
+    //   password: "evywS3K6RJB8~>.^",
+    // });
 
     const requests = await Users.findAll({
       include: {
@@ -218,6 +218,7 @@ const sendPaymentMessage = async (req, res) => {
             partnerInfo = partnerInfo.filter(
               (partner) => partner.id == e.station
             );
+            // return res.json(,"++++++++++++++++++++++++++")
 
             if (payInfo.status == 3) {
               var message = {
@@ -235,8 +236,10 @@ const sendPaymentMessage = async (req, res) => {
               const userData = {
                 title: "Վճարումը մերժված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
-                latitude: partnerInfo.location.latitude,
-                longitude: partnerInfo.location.longitude,
+                latitude: partnerInfo[0].location.latitude,
+                longitude: partnerInfo[0].location.longitude,
+                userId:request.id,
+                active:false,
               };
 
               // Reference to the location where you want to add the data
@@ -268,8 +271,10 @@ const sendPaymentMessage = async (req, res) => {
               const userData = {
                 title: "Վճարումն հաստատված է",
                 body:  `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                latitude: partnerInfo.location.latitude,
-                longitude: partnerInfo.location.longitude,
+                latitude: partnerInfo[0].location.latitude,
+                longitude: partnerInfo[0].location.longitude,
+                userId:request.id,
+                active:false,
               };
 
               // Reference to the location where you want to add the data
