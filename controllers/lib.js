@@ -173,7 +173,7 @@ const sendPaymentMessage = async (req, res) => {
           request.PaymentStatusOnes.map(async (e)=>{
 
             let payInfo = await fetch(
-              `https://api.onepay.am/autoclub/payment-service/order/${request.PaymentStatusOnes[0].requestId}`,
+              `https://api.onepay.am/autoclub/payment-service/order/${e.requestId}`,
               {
               method: "POST",
               headers: {
@@ -202,7 +202,7 @@ const sendPaymentMessage = async (req, res) => {
             };
             await admin.messaging().send(message);
             await PaymentStatusOne.destroy({
-              where:{requestId:request.PaymentStatusOnes[0].requestId}
+              where:{requestId:e.requestId}
             })
           } else if (payInfo.status === 2) {
             var message = {
@@ -214,7 +214,7 @@ const sendPaymentMessage = async (req, res) => {
             };
             await admin.messaging().send(message);
             await PaymentStatusOne.destroy({
-              where:{id:request.PaymentStatusOnes[0].id}
+              where:{id:e.id}
             })
           }
         })
