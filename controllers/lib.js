@@ -7,6 +7,7 @@ const { Op } = require("sequelize");
 const mysql = require("mysql2");
 const { PaymentStatusOne } = require("../models");
 const Sequelize = require("sequelize");
+const { v4 } = require("uuid");
 
 const sendSMSCode = async (phoneNumber, subject, text) => {
   //working API
@@ -147,8 +148,11 @@ const sendPaymentMessage = async (req, res) => {
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
+        databaseURL: "https://autozone-5d681-default-rtdb.firebaseio.com/",
       });
     }
+    const db = admin.database();
+    const rootRef = db.ref();
 
     const connection = mysql.createConnection({
       host: "localhost",
@@ -157,7 +161,6 @@ const sendPaymentMessage = async (req, res) => {
       password: "evywS3K6RJB8~>.^",
     });
 
-    // // 
     const requests = await Users.findAll({
       include: {
         model: PaymentStatusOne,
@@ -170,59 +173,126 @@ const sendPaymentMessage = async (req, res) => {
     if (requests.length > 0) {
       await Promise.all(
         requests.map(async (request) => {
-          request.PaymentStatusOnes.map(async (e)=>{
-
+          request.PaymentStatusOnes.map(async (e) => {
             let payInfo = await fetch(
               `https://api.onepay.am/autoclub/payment-service/order/${e.requestId}`,
               {
-              method: "POST",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                Authorization:
-                "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-              },
-              body: JSON.stringify({
-                userID: request.id,
-              }),
+                method: "POST",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                  Authorization:
+                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+                },
+                body: JSON.stringify({
+                  userID: request.id,
+                }),
+              }
+            );
+            if (!payInfo.ok) {
+              return res
+                .status(500)
+                .json({ error: "Failed to fetch pay info" });
             }
-          );
-          if (!payInfo.ok) {
-            return res.status(500).json({ error: "Failed to fetch pay info" });
-          }
-          payInfo = await payInfo.json();
-          
-          if (payInfo.status == 3) {
-            var message = {
-              notification: {
+            payInfo = await payInfo.json();
+
+            let partnerInfo = await fetch(
+              `https://api.onepay.am/autoclub/partners`,
+              {
+                method: "GEt",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                  Authorization:
+                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+                },
+              }
+            );
+            if (!partnerInfo.ok) {
+              return res
+                .status(500)
+                .json({ error: "Failed to fetch pay info" });
+            }
+            partnerInfo = await partnerInfo.json();
+
+            partnerInfo = partnerInfo.filter(
+              (partner) => partner.id == e.station
+            );
+
+            if (payInfo.status == 3) {
+              var message = {
+                notification: {
+                  title: "Վճարումը մերժված է",
+                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
+                },
+                token: request.deviceToken,
+              };
+              await admin.messaging().send(message);
+
+              await PaymentStatusOne.destroy({
+                where: { requestId: e.requestId },
+              });
+              const userData = {
                 title: "Վճարումը մերժված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
-              },
-              token: request.deviceToken,
-            };
-            await admin.messaging().send(message);
-            await PaymentStatusOne.destroy({
-              where:{requestId:e.requestId}
-            })
-          } else if (payInfo.status === 2) {
-            var message = {
-              notification: {
+                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
+                latitude: partnerInfo.location.latitude,
+                longitude: partnerInfo.location.longitude,
+              };
+
+              // Reference to the location where you want to add the data
+              const userRef = rootRef
+                .child("Paymentmessages")
+                .child("message" + v4());
+
+              // Push data to the specified location
+              userRef.set(userData, (error) => {
+                if (error) {
+                  console.error("Data could not be saved.", error);
+                } else {
+                  console.log("Data saved successfully.");
+                }
+                admin.app().delete();
+              });
+            } else if (payInfo.status === 2) {
+              var message = {
+                notification: {
+                  title: "Վճարումն հաստատված է",
+                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+                },
+                token: request.deviceToken,
+              };
+              await admin.messaging().send(message);
+              await PaymentStatusOne.destroy({
+                where: { id: e.id },
+              });
+              const userData = {
                 title: "Վճարումն հաստատված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-              },
-              token: request.deviceToken,
-            };
-            await admin.messaging().send(message);
-            await PaymentStatusOne.destroy({
-              where:{id:e.id}
-            })
-          }
+                body:  `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+                latitude: partnerInfo.location.latitude,
+                longitude: partnerInfo.location.longitude,
+              };
+
+              // Reference to the location where you want to add the data
+              const userRef = rootRef
+                .child("Paymentmessages")
+                .child("message" + v4());
+
+              // Push data to the specified location
+              userRef.set(userData, (error) => {
+                if (error) {
+                  console.error("Data could not be saved.", error);
+                } else {
+                  console.log("Data saved successfully.");
+                }
+                admin.app().delete();
+              });
+            }
+          });
         })
-      })
       );
-      }
-      
-      connection.query(
+    }
+
+    connection.query(
       "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
       async function (err, results) {
         if (err) {
