@@ -6,6 +6,7 @@ const admin = require("firebase-admin");
 const { Op } = require("sequelize");
 const mysql = require("mysql2");
 const { PaymentStatusOne } = require("../models");
+const Sequelize = require("sequelize");
 
 const sendSMSCode = async (phoneNumber, subject, text) => {
   //working API
@@ -143,47 +144,80 @@ const sendInspectionMessage = async () => {
 
 const sendPaymentMessage = async (req, res) => {
   try {
-    // if (!admin.apps.length) {
-    //   admin.initializeApp({
-    //     credential: admin.credential.cert(serviceAccount),
-    //   });
-    // }
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+    }
 
-    // const connection = mysql.createConnection({
-    //   host: "localhost",
-    //   user: "root",
-    //   database: "onepay",
-    //   password: "evywS3K6RJB8~>.^",
-    // });
+    const connection = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      database: "onepay",
+      password: "evywS3K6RJB8~>.^",
+    });
 
-    // const message = {
-    //   notification: {
-    //     title: "Վճարումն հաստատված է",
-    //     body: `71LS001 մեքենայի տեխզննման վճարումը հաստատված է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-    //   },
-    //   token:
-    //     "d_I8MZVZR8GVUq4jW-cZnh:APA91bHrVUZAbjelN5NRfq7N9Z2xPu02TvPCB__CBP5A1bOPNma0naKY_YYe7xe3p58kexS8gXxAqR5EPB0qyF__NFPItQjBl-HVJM7NYl0luTDl3u8Wqx7MPV3JnGkSqEu73V3NB7lt",
-    // };
-
-    // // await admin.messaging().send(message);
-    const requests = await Users.findAll({include:{
-      model:PaymentStatusOne
-    }});
-
+    // // 
+    const requests = await Users.findAll({
+      include: {
+        model: PaymentStatusOne,
+      },
+      attributes: ["id", "deviceToken"],
+      where: {
+        "$PaymentStatusOnes.id$": { [Sequelize.Op.ne]: null },
+      },
+    });
     if (requests.length > 0) {
-     await Promise.all(
+      await Promise.all(
         requests.map(async (request) => {
-          const users  = await Users.findAll({where:{phoneNumber:request.phoneNumber},attributes:['id','deviceToken']});
-          users.map((user)=>{
-            console.log(requests.length);
-          })
-          
+          let payInfo = await fetch(
+            `https://api.onepay.am/autoclub/payment-service/order/53904`,
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization:
+                  "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+              },
+              body: JSON.stringify({
+                userID: request.id,
+              }),
+            }
+          );
+          if (!payInfo.ok) {
+            return res.status(500).json({ error: "Failed to fetch pay info" });
+          }
+          payInfo = await payInfo.json();
+
+          if (payInfo.status == 3) {
+           var message = {
+              notification: {
+                title: "Վճարումը մերժված է",
+                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
+              },
+              token: request.deviceToken,
+            };
+            await admin.messaging().send(message);
+            await PaymentStatusOne.destroy({
+              where:{id:request.PaymentStatusOnes[0].id}
+            })
+          } else if (payInfo.status === 2) {
+           var message = {
+              notification: {
+                title: "Վճարումն հաստատված է",
+                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+              },
+              token: request.deviceToken,
+            };
+            await admin.messaging().send(message);
+            await PaymentStatusOne.destroy({
+              where:{id:request.PaymentStatusOnes[0].id}
+            })
+          }
         })
       );
-    return res.json({success:true})
-
     }
-    return res.json({success:true})
 
     connection.query(
       "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
@@ -193,15 +227,17 @@ const sendPaymentMessage = async (req, res) => {
           return res.status(500).json({ message: "Something went wrong." });
         }
         if (results.length > 0) {
-          await Promise.all(results.map(async (e) => {
-            let phone  = e.phone.replace("0","374");
+          await Promise.all(
+            results.map(async (e) => {
+              let phone = e.phone.replace("0", "374");
 
-            await PaymentStatusOne.create({
-              phoneNumber: phone, 
-              requestId: +e.id,
-              station: +e.partner_id
-            });
-          }));
+              await PaymentStatusOne.create({
+                phoneNumber: phone,
+                requestId: +e.id,
+                station: +e.partner_id,
+              });
+            })
+          );
           return res.status(200).json({ success: true });
         }
         return res.status(404).json({ message: "Request not found!" });
