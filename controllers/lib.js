@@ -154,12 +154,12 @@ const sendPaymentMessage = async (req, res) => {
     const db = admin.database();
     const rootRef = db.ref();
 
-    // const connection = mysql.createConnection({
-    //   host: "localhost",
-    //   user: "root",
-    //   database: "onepay",
-    //   password: "evywS3K6RJB8~>.^",
-    // });
+    const connection = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      database: "onepay",
+      password: "evywS3K6RJB8~>.^",
+    });
 
     const requests = await Users.findAll({
       include: {
@@ -244,8 +244,8 @@ const sendPaymentMessage = async (req, res) => {
 
               // Reference to the location where you want to add the data
               const userRef = rootRef
-                .child("Paymentmessages")
-                .child("message" + v4());
+                .child("messages")
+                .child("Paymentmessage" + v4());
 
               // Push data to the specified location
               userRef.set(userData, (error) => {
