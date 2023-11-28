@@ -170,15 +170,17 @@ const sendPaymentMessage = async (req, res) => {
     if (requests.length > 0) {
       await Promise.all(
         requests.map(async (request) => {
-          let payInfo = await fetch(
-            `https://api.onepay.am/autoclub/payment-service/order/${request.PaymentStatusOnes[0].requestId}`,
-            {
+          request.PaymentStatusOnes.map(async (e)=>{
+
+            let payInfo = await fetch(
+              `https://api.onepay.am/autoclub/payment-service/order/${request.PaymentStatusOnes[0].requestId}`,
+              {
               method: "POST",
               headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
                 Authorization:
-                  "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+                "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
               },
               body: JSON.stringify({
                 userID: request.id,
@@ -189,9 +191,9 @@ const sendPaymentMessage = async (req, res) => {
             return res.status(500).json({ error: "Failed to fetch pay info" });
           }
           payInfo = await payInfo.json();
-
+          
           if (payInfo.status == 3) {
-           var message = {
+            var message = {
               notification: {
                 title: "Վճարումը մերժված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
@@ -203,7 +205,7 @@ const sendPaymentMessage = async (req, res) => {
               where:{requestId:request.PaymentStatusOnes[0].requestId}
             })
           } else if (payInfo.status === 2) {
-           var message = {
+            var message = {
               notification: {
                 title: "Վճարումն հաստատված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
@@ -216,10 +218,11 @@ const sendPaymentMessage = async (req, res) => {
             })
           }
         })
+      })
       );
-    }
-
-    connection.query(
+      }
+      
+      connection.query(
       "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
       async function (err, results) {
         if (err) {
