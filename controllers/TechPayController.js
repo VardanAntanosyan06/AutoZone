@@ -189,9 +189,7 @@ const GetOrders = async (req, res) => {
       }
     );
 
-    if (!payInfo.ok) {
-      return res.status(500).json({ error: "Failed to fetch pay info" });
-    }
+    if (!payInfo.ok) return res.status(500).json({ error: "Failed to fetch pay info" });
     payInfo = await payInfo.json();
 
     return res.status(200).json({ success: true, payInfo });
