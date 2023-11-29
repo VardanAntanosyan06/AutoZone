@@ -161,6 +161,31 @@ const sendPaymentMessage = async (req, res) => {
       password: "evywS3K6RJB8~>.^",
     });
 
+    connection.query(
+      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      async function (err, results) {
+        if (err) {
+          console.log(err);
+          return { message: "Something went wrong." };
+        }
+        if (results.length > 0) {
+          await Promise.all(
+            results.map(async (e) => {
+              let phone = e.phone.replace("0", "374");
+
+              await PaymentStatusOne.create({
+                phoneNumber: phone,
+                requestId: +e.id,
+                station: +e.partner_id,
+              });
+            })
+          );
+          return { success: true };
+        }
+        return { message: "Request not found!" };
+      }
+    );
+
     const requests = await Users.findAll({
       include: {
         model: PaymentStatusOne,
@@ -190,7 +215,7 @@ const sendPaymentMessage = async (req, res) => {
               }
             );
             if (!payInfo.ok) {
-              return({ error: "Failed to fetch pay info" });
+              return { error: "Failed to fetch pay info" };
             }
             payInfo = await payInfo.json();
 
@@ -207,7 +232,7 @@ const sendPaymentMessage = async (req, res) => {
               }
             );
             if (!partnerInfo.ok) {
-              return ({ error: "Failed to fetch pay info" });
+              return { error: "Failed to fetch pay info" };
             }
             partnerInfo = await partnerInfo.json();
 
@@ -233,8 +258,8 @@ const sendPaymentMessage = async (req, res) => {
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
                 latitude: partnerInfo[0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
-                userId:request.id,
-                active:false,
+                userId: request.id,
+                active: false,
               };
 
               // Reference to the location where you want to add the data
@@ -265,11 +290,11 @@ const sendPaymentMessage = async (req, res) => {
               });
               const userData = {
                 title: "Վճարումն հաստատված է",
-                body:  `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
                 latitude: partnerInfo[0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
-                userId:request.id,
-                active:false,
+                userId: request.id,
+                active: false,
               };
 
               // Reference to the location where you want to add the data
@@ -291,35 +316,12 @@ const sendPaymentMessage = async (req, res) => {
         })
       );
     }
-
-    connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
-      async function (err, results) {
-        if (err) {
-          console.log(err);
-          return ({ message: "Something went wrong." });
-        }
-        if (results.length > 0) {
-          await Promise.all(
-            results.map(async (e) => {
-              let phone = e.phone.replace("0", "374");
-
-              await PaymentStatusOne.create({
-                phoneNumber: phone,
-                requestId: +e.id,
-                station: +e.partner_id,
-              });
-            })
-          );
-          return ({ success: true });
-        }
-        return ({ message: "Request not found!" });
-      }
-    );
   } catch (error) {
     console.error("Error sending GET request:", error);
   }
 };
+
+const getBankResponseInOneMinute = async () => {};
 
 module.exports = {
   sendSMSCode,
