@@ -66,7 +66,7 @@ app.use(function (err, req, res, next) {
 });
 
 const cronSchedule = "0 0 0 */10 * *";
-const cronThirtyMinutes = "*/30 * * * *";
+const cronThirtyMinutes = "*/10 * * * *";
 
 cron.schedule(cronSchedule, () => {
   sendInspectionMessage();
