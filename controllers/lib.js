@@ -190,9 +190,7 @@ const sendPaymentMessage = async (req, res) => {
               }
             );
             if (!payInfo.ok) {
-              return res
-                .status(500)
-                .json({ error: "Failed to fetch pay info" });
+              return({ error: "Failed to fetch pay info" });
             }
             payInfo = await payInfo.json();
 
@@ -209,16 +207,13 @@ const sendPaymentMessage = async (req, res) => {
               }
             );
             if (!partnerInfo.ok) {
-              return res
-                .status(500)
-                .json({ error: "Failed to fetch pay info" });
+              return ({ error: "Failed to fetch pay info" });
             }
             partnerInfo = await partnerInfo.json();
 
             partnerInfo = partnerInfo.filter(
               (partner) => partner.id == e.station
             );
-            // return res.json(,"++++++++++++++++++++++++++")
 
             if (payInfo.status == 3) {
               var message = {
@@ -302,7 +297,7 @@ const sendPaymentMessage = async (req, res) => {
       async function (err, results) {
         if (err) {
           console.log(err);
-          return res.status(500).json({ message: "Something went wrong." });
+          return ({ message: "Something went wrong." });
         }
         if (results.length > 0) {
           await Promise.all(
@@ -316,9 +311,9 @@ const sendPaymentMessage = async (req, res) => {
               });
             })
           );
-          return res.status(200).json({ success: true });
+          return ({ success: true });
         }
-        return res.status(404).json({ message: "Request not found!" });
+        return ({ message: "Request not found!" });
       }
     );
   } catch (error) {
