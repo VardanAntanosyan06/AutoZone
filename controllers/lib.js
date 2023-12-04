@@ -172,12 +172,18 @@ const sendPaymentMessage = async (req, res) => {
           await Promise.all(
             results.map(async (e) => {
               let phone = e.phone.replace("0", "374");
-
-              await PaymentStatusOne.create({
+              const isRequest = await PaymentStatusOne.findOne({where:{
                 phoneNumber: phone,
                 requestId: +e.id,
-                station: +e.partner_id,
-              });
+                station: +e.partner_id
+              }})
+              if(!isRequest){
+                await PaymentStatusOne.create({
+                  phoneNumber: phone,
+                  requestId: +e.id,
+                  station: +e.partner_id,
+                });
+              } 
             })
           );
           return { success: true };
@@ -222,7 +228,7 @@ const sendPaymentMessage = async (req, res) => {
             let partnerInfo = await fetch(
               `https://api.onepay.am/autoclub/partners`,
               {
-                method: "GEt",
+                method: "GET",
                 headers: {
                   Accept: "application/json",
                   "Content-Type": "application/json",
