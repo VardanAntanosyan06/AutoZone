@@ -158,7 +158,7 @@ const sendPaymentMessage = async (req, res) => {
       host: "localhost",
       user: "root",
       database: "onepay",
-      password: "evywS3K6RJB8~>.^",
+      password: process.env.MYSQL_PASSWORD,
     });
 
     connection.query(
@@ -262,7 +262,7 @@ const sendPaymentMessage = async (req, res) => {
               const userData = {
                 title: "Վճարումը մերժված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
-                latitude: partnerInfo[0].location.latitude,
+                latitude: [0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
                 userId: request.id,
                 active: false,
@@ -327,7 +327,6 @@ const sendPaymentMessage = async (req, res) => {
   }
 };
 
-const getBankResponseInOneMinute = async () => {};
 
 module.exports = {
   sendSMSCode,
