@@ -264,8 +264,8 @@ const sendPaymentMessage = async (req, res) => {
 
               // Reference to the location where you want to add the data
               const userRef = rootRef
-                .child("messages")
-                .child("Paymentmessage" + v4());
+                .child("Paymentmessages")
+                .child("payment" + v4());
 
               // Push data to the specified location
               userRef.set(userData, (error) => {

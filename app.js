@@ -13,6 +13,7 @@ const swaggerUi = require("swagger-ui-express");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
+var adminRouter= require("./routes/admin")
 var carsRouter = require("./routes/cars");
 var notificationRouter = require("./routes/notification");
 var TechPaymentRouter = require("./routes/TechPay");
@@ -38,6 +39,7 @@ app.use(fileUpload());
 
 app.use("/", indexRouter);
 app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/cars", carsRouter);
 app.use("/api/v1/techPayment", TechPaymentRouter);
 app.use("/api/v1/", getAlllocationsRouter);

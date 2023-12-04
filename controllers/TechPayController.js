@@ -119,6 +119,7 @@ const GetAllStatons = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
+
 const GetServicesForPay = async (req, res) => {
   try {
     const {techNumber } = req.body;
