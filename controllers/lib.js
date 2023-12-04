@@ -321,7 +321,7 @@ const sendPaymentMessage = async (req, res) => {
   }
 };
 
-// const getBankResponseInOneMinute = async () => {};
+const getBankResponseInOneMinute = async () => {};
 
 module.exports = {
   sendSMSCode,
