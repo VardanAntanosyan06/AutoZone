@@ -298,7 +298,7 @@ const sendPaymentMessage = async (req, res) => {
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
                 latitude: partnerInfo[0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
-                latitude: [0].location.latitude,
+                latitude: partnerInfo[0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
                 name:partnerInfo[0].translations.hy.name,
                 address:partnerInfo[0].translations.hy.address,
