@@ -245,7 +245,7 @@ const sendPaymentMessage = async (req, res) => {
             partnerInfo = partnerInfo.filter(
               (partner) => partner.id == e.station
             );
-
+            const date = new Date().toISOString()
             if (payInfo.status == 3) {
               var message = {
                 notification: {
@@ -262,7 +262,7 @@ const sendPaymentMessage = async (req, res) => {
               const userData = {
                 title: "Վճարումը մերժված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
-                date:new Date().toISOString(),
+                date,
                 userId: request.id,
                 active: false,
               };
@@ -302,7 +302,7 @@ const sendPaymentMessage = async (req, res) => {
                 longitude: partnerInfo[0].location.longitude,
                 name:partnerInfo[0].translations.hy.name,
                 address:partnerInfo[0].translations.hy.address,
-                date:new Date().toISOString(),
+                date,
                 userId: request.id,
                 active: false,
               };
