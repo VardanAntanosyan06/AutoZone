@@ -264,13 +264,15 @@ const sendPaymentMessage = async (req, res) => {
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
                 latitude: [0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
+                name:partnerInfo[0].translations.hy.name,
+                address:partnerInfo[0].translations.hy.address,
                 userId: request.id,
                 active: false,
               };
 
               // Reference to the location where you want to add the data
               const userRef = rootRef
-                .child("Paymentmessages")
+                .child("payment_messages")
                 .child("payment" + v4());
 
               // Push data to the specified location
@@ -305,7 +307,7 @@ const sendPaymentMessage = async (req, res) => {
 
               // Reference to the location where you want to add the data
               const userRef = rootRef
-              .child("Paymentmessages")
+              .child("payment_messages")
               .child("payment" + v4());
 
               // Push data to the specified location
@@ -327,7 +329,7 @@ const sendPaymentMessage = async (req, res) => {
   }
 };
 
-
+// const updateAllDataCron
 module.exports = {
   sendSMSCode,
   calculateDistance,

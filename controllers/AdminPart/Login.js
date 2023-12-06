@@ -57,6 +57,7 @@ const isLogined = async (req,res)=>{
     .json({ message: "Something went wrong." });
   }
 }
+
 module.exports = {
   Login,
   isLogined
