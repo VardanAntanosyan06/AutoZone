@@ -266,6 +266,7 @@ const sendPaymentMessage = async (req, res) => {
                 longitude: partnerInfo[0].location.longitude,
                 name:partnerInfo[0].translations.hy.name,
                 address:partnerInfo[0].translations.hy.address,
+                date:new Date().toISOString(),
                 userId: request.id,
                 active: false,
               };
