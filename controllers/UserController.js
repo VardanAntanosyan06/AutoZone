@@ -10,7 +10,7 @@ const fs = require("fs");
 const { sendSMSCode } = require("../controllers/lib");
 const fetch = require("node-fetch");
 const { createClient } = require("redis");
-const {Op} = require("sequelize")
+const { Op } = require("sequelize");
 const sharp = require("sharp");
 
 const LoginOrRegister = async (req, res) => {
@@ -245,42 +245,28 @@ const deleteUserForTesting = async (req, res) => {
   try {
     const { phoneNumber } = req.params;
 
-    const today = new Date();
+    const User = await Users.findOne({ where: { phoneNumber } });
 
-    const User = await Users.findAll({where:{
-    createdAt: {
-      [Op.lt]: today
-    }}});
-
-    // User &&
-    //   (await Cars.destroy({
-    //     where: { userId: User.id },
-    //   }));
-    // const status = await Users.destroy({
-    //   where: { phoneNumber },
-    // });
-    User.map((user)=>{
-      Cars.destroy({
-            where: { userId: user.id },
-          }).then(()=>console.log("Car deleted"))
-          .catch((e)=>console.log(e))
-           Users.destroy({
-          where: { id:user.id },
-        }).then(()=>console.log("User deleted"))
-        .catch((e)=>console.log(e))
-    })
-    // if (status === 1)
-    //   return res
-    //     .status(200)
-    //     .json({ success: true, message: "The user was deleted successfully." });
-    // return res
-    //   .status(404)
-    //   .json({ success: false, message: "User not found!." });
+    User &&
+      (await Cars.destroy({
+        where: { userId: User.id },
+      }));
+    const status = await Users.destroy({
+      where: { phoneNumber },
+    });
+    if (status === 1)
+      return res
+        .status(200)
+        .json({ success: true, message: "The user was deleted successfully." });
+    return res
+      .status(404)
+      .json({ success: false, message: "User not found!." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
+
 const updateDeviceToken = async (req, res) => {
   try {
     const { deviceToken } = req.body;
@@ -370,13 +356,13 @@ const GetUserData = async (req, res) => {
         // ],
       });
       const Car = await Cars.findAll({
-        where:{userId:User.id},
-        order:[["id","ASC"]]
-      })
+        where: { userId: User.id },
+        order: [["id", "ASC"]],
+      });
 
       if (User) {
         // User['Cars'] = Car
-        User.setDataValue('Cars', Car);
+        User.setDataValue("Cars", Car);
         return res.json({ success: true, User });
       }
       return res
@@ -501,7 +487,7 @@ const sendComplaint = async (req, res) => {
   }
 };
 
-const GetDAHKInfo = async (req, res) => { 
+const GetDAHKInfo = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
     const client = await createClient()
