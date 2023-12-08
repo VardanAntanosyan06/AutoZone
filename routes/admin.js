@@ -6,5 +6,7 @@ const MenuController = require("../controllers/AdminPart/Menu")
 router.post("/login",controller.Login)
 router.get("/isLogined",controller.isLogined)
 router.post("/getAllUserData",MenuController.GetAllUserData)
+router.post("/getAllCarData",MenuController.getAllCarData)
+router.get("/getAllComplaintsData",MenuController.getAllComplaintsData)
 
 module.exports = router;
