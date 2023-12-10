@@ -1,7 +1,7 @@
 const { Users, Cars, Complaints } = require("../../models");
 const { Op } = require("sequelize");
 const Sequelize = require("sequelize")
-
+const mysql = require("mysql2");
 const GetAllUserData = async (req, res) => {
   try {
     const { filter } = req.body;
@@ -45,6 +45,8 @@ const getAllCarData = async (req, res) => {
           "carNumber",
           "carMark",
           "vehicleTypeHy",
+          "insuranceEndDate",
+          "inspection"
         ],
         where: {
           [Op.or]: [
@@ -98,8 +100,34 @@ const getAllComplaintsData = async (req, res) => {
   }
 };
 
+const getAllPaymentData = async(req,res)=>{
+  try {
+    const connection = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      database: "onepay",
+      password: process.env.MYSQL_PASSWORD,
+    });
+
+    connection.query(
+      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      async function (err, results) {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({success:false, message: "Something went wrong." });
+        }
+          return res.status(200).json({success:true,results})       
+        })
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+}
 module.exports = {
   GetAllUserData,
   getAllCarData,
-  getAllComplaintsData
+  getAllComplaintsData,
+  getAllPaymentData
 };
