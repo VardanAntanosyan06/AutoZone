@@ -80,7 +80,7 @@ const getAllCarData = async (req, res) => {
     }
     if (date) {
       const fixedDate = new Date(date);
-      const Car =  await Cars.findAll({
+      const Car = await Cars.findAll({
         attributes: [
           "carTechNumber",
           "userId",
@@ -101,7 +101,7 @@ const getAllCarData = async (req, res) => {
         order: [["id", "DESC"]],
       });
 
-      return res.status(200).json({ success: true, User });
+      return res.status(200).json({ success: true, Car });
     }
     const Car = await Cars.findAll({
       attributes: [
@@ -126,8 +126,8 @@ const getAllCarData = async (req, res) => {
 
 const getAllComplaintsData = async (req, res) => {
   try {
-    const {filter} = req.body;
-    if(filter){
+    const { filter, date } = req.body;
+    if (filter) {
       let Complaint = await Complaints.findAll({
         include: [
           { model: Users, as: "sender", attributes: ["phoneNumber"] },
@@ -136,10 +136,29 @@ const getAllComplaintsData = async (req, res) => {
         order: [["id", "DESC"]],
         where: {
           "$Complaints.id$": { [Sequelize.Op.ne]: null },
-           phoneNumber: { [Op.like]: `%${filter}` },
+          phoneNumber: { [Op.like]: `%${filter}` },
         },
       });
-      return res.status(200).json({success:true,Complaint})
+      return res.status(200).json({ success: true, Complaint });
+    }
+    if (date) {
+      let Complaint = await Complaints.findAll({
+        include: [
+          { model: Users, as: "sender", attributes: ["phoneNumber"] },
+          { model: Users, as: "receiver", attributes: ["phoneNumber"] },
+        ],
+        order: [["id", "DESC"]],
+        where: {
+          "$Complaints.id$": { [Sequelize.Op.ne]: null },
+          createdAt: {
+            [Op.between]: [
+              fixedDate,
+              new Date(fixedDate.getTime() + 24 * 60 * 60 * 1000),
+            ],
+          },
+        },
+      });
+      return res.status(200).json({ success: true, Complaint });
     }
     let Complaint = await Complaints.findAll({
       include: [
@@ -151,7 +170,7 @@ const getAllComplaintsData = async (req, res) => {
         "$Complaints.id$": { [Sequelize.Op.ne]: null },
       },
     });
-    return res.status(200).json({success:true,Complaint})
+    return res.status(200).json({ success: true, Complaint });
   } catch (error) {
     console.log(error);
     return res
@@ -162,7 +181,7 @@ const getAllComplaintsData = async (req, res) => {
 
 const getAllPaymentData = async (req, res) => {
   try {
-    const {filter,date} = req.body;
+    const { filter, date } = req.body;
 
     const connection = mysql.createConnection({
       host: "localhost",
@@ -171,22 +190,22 @@ const getAllPaymentData = async (req, res) => {
       password: process.env.MYSQL_PASSWORD,
     });
 
-    if(filter){
+    if (filter) {
       connection.query(
         `SELECT *
         FROM orders
         WHERE is_autoclub = 1
-          AND (id = ${filter} OR phoneNumber LIKE ${'filter%'})
+          AND (id = ${filter} OR phoneNumber LIKE ${"filter%"})
         ORDER BY id DESC;`,
         async function (err, results) {
           if (err) {
             console.log(err);
             return res
-            .status(500)
-            .json({ success: false, message: "Something went wrong." });
+              .status(500)
+              .json({ success: false, message: "Something went wrong." });
           }
           return res.status(200).json({ success: true, results });
-      }
+        }
       );
     }
     connection.query(
@@ -195,11 +214,11 @@ const getAllPaymentData = async (req, res) => {
         if (err) {
           console.log(err);
           return res
-          .status(500)
-          .json({ success: false, message: "Something went wrong." });
+            .status(500)
+            .json({ success: false, message: "Something went wrong." });
         }
         return res.status(200).json({ success: true, results });
-    }
+      }
     );
   } catch (error) {
     console.log(error);
