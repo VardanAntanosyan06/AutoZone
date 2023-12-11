@@ -67,6 +67,8 @@ const getAllCarData = async (req, res) => {
         "carNumber",
         "carMark",
         "vehicleTypeHy",
+        "insuranceEndDate",
+        "inspection"
       ],
       order:[['id','DESC']]
     });
