@@ -357,7 +357,7 @@ const GetUserData = async (req, res) => {
       });
       const Car = await Cars.findAll({
         where: { userId: User.id },
-        order: [["id", "ASC"]],
+        order: [["id", "DESC"]],
       });
 
       if (User) {

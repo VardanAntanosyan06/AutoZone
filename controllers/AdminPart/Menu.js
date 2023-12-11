@@ -16,14 +16,14 @@ const GetAllUserData = async (req, res) => {
             { gmail: { [Op.like]: `%${filter}` } },
           ],
         },
-        order: [["id", "ASC"]],
+        order: [["id", "DESC"]],
       });
 
       return res.status(200).json({ success: true, User });
     }
     const User = await Users.findAll({
       attributes: ["id", "phoneNumber", "gmail", "createdAt"],
-      order:[['id','ASC']]
+      order:[['id','DESC']]
     });
     return res.status(200).json({ success: true, User });
   } catch (error) {
@@ -55,7 +55,7 @@ const getAllCarData = async (req, res) => {
             +filter && { userId:filter },
           ],
         },
-        order: [["id", "ASC"]],
+        order: [["id", "DESC"]],
       });
 
       return res.status(200).json({ success: true, Car });
@@ -68,7 +68,7 @@ const getAllCarData = async (req, res) => {
         "carMark",
         "vehicleTypeHy",
       ],
-      order:[['id','ASC']]
+      order:[['id','DESC']]
     });
     return res.status(200).json({ success: true, Car });
   } catch (error) {
@@ -85,7 +85,7 @@ const getAllComplaintsData = async (req, res) => {
       include: [
         { model: Users, as: 'sender', attributes:['phoneNumber'] },
         { model: Users, as: 'receiver', attributes:['phoneNumber']},
-      ],      order:[['id','ASC']],
+      ],      order:[['id','DESC']],
       where: {
         "$Complaints.id$": { [Sequelize.Op.ne]: null },
       },
@@ -110,7 +110,7 @@ const getAllPaymentData = async(req,res)=>{
     });
 
     connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      "SELECT * FROM `orders` WHERE `is_autoclub` =1;",
       async function (err, results) {
         if (err) {
           console.log(err);
@@ -131,3 +131,4 @@ module.exports = {
   getAllComplaintsData,
   getAllPaymentData
 };
+

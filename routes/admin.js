@@ -8,5 +8,5 @@ router.get("/isLogined",controller.isLogined)
 router.post("/getAllUserData",MenuController.GetAllUserData)
 router.post("/getAllCarData",MenuController.getAllCarData)
 router.get("/getAllComplaintsData",MenuController.getAllComplaintsData)
-
+router.get("/getAllPaymentData",MenuController.getAllPaymentData)
 module.exports = router;

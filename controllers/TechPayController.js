@@ -202,7 +202,7 @@ const GetOrders = async (req, res) => {
 
 const GetPaymentURLArca = async (req, res) => {
   try {
-    const { techNumber, station, services } = req.body;
+    const { techNumber, station, services,redirectUri } = req.body;
 
     if (!techNumber || !station)
       return res.status(403).json({
@@ -261,6 +261,7 @@ const GetPaymentURLArca = async (req, res) => {
           service_request_id: User.Cars[0].serviceRequestId,
           station,
           services,
+          redirectUri
         }),
       }
     );
