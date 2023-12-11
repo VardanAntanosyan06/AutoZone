@@ -54,7 +54,7 @@ const GetAllUserData = async (req, res) => {
 
 const getAllCarData = async (req, res) => {
   try {
-    const { filter, data } = req.body;
+    const { filter, date } = req.body;
     if (filter) {
       const Car = await Cars.findAll({
         attributes: [
