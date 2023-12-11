@@ -254,7 +254,7 @@ const UpdateCarInspection = async (req, res) => {
   try {
     const { techNumber, inspection } = req.body;
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
-
+    
     if (!Car)
       return res
         .status(404)

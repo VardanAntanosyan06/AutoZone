@@ -4,7 +4,7 @@ const Sequelize = require("sequelize")
 const mysql = require("mysql2");
 const GetAllUserData = async (req, res) => {
   try {
-    const { filter } = req.body;
+    const { filter,date } = req.body;
     // console.log(new Date(""));
     if (filter) {
       const User = await Users.findAll({
@@ -15,6 +15,17 @@ const GetAllUserData = async (req, res) => {
             { phoneNumber: { [Op.like]: `%${filter}` } },
             { gmail: { [Op.like]: `%${filter}` } },
           ],
+        },
+        order: [["id", "DESC"]],
+      });
+
+      return res.status(200).json({ success: true, User });
+    }
+    if(date){
+      const User = await Users.findAll({
+        attributes: ["id", "phoneNumber", "gmail", "createdAt"],
+        where: {
+             createdAt: { [Op.like]: `%${date}` },
         },
         order: [["id", "DESC"]],
       });
@@ -36,7 +47,7 @@ const GetAllUserData = async (req, res) => {
 
 const getAllCarData = async (req, res) => {
   try {
-    const { filter } = req.body;
+    const { filter,data } = req.body;
     if (filter) {
       const Car = await Cars.findAll({
         attributes: [
@@ -54,6 +65,17 @@ const getAllCarData = async (req, res) => {
             { carNumber: { [Op.like]: `%${filter}` } },
             +filter && { userId:filter },
           ],
+        },
+        order: [["id", "DESC"]],
+      });
+
+      return res.status(200).json({ success: true, Car });
+    }
+    if(date){
+      const Car = await Cars.findAll({
+        attributes: ["id", "phoneNumber", "gmail", "createdAt"],
+        where: {
+             createdAt: { [Op.like]: `%${date}` },
         },
         order: [["id", "DESC"]],
       });
