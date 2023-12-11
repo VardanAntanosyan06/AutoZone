@@ -7,7 +7,7 @@ const checkisAdmin = () =>{
       if (!token) {
         return res.status(401).json({ success: false });
       }
-      const decoded = jwt.verify(token, process.env.SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (!decoded) {
         return res.status(401).json({ message: "You don't have access" });
       }

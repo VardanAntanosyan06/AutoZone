@@ -1,10 +1,11 @@
 const { Users, Cars, Complaints } = require("../../models");
 const { Op } = require("sequelize");
-const Sequelize = require("sequelize")
+const Sequelize = require("sequelize");
 const mysql = require("mysql2");
+
 const GetAllUserData = async (req, res) => {
   try {
-    const { filter,date } = req.body;
+    const { filter, date } = req.body;
     // console.log(new Date(""));
     if (filter) {
       const User = await Users.findAll({
@@ -21,11 +22,17 @@ const GetAllUserData = async (req, res) => {
 
       return res.status(200).json({ success: true, User });
     }
-    if(date){
+    if (date) {
+      const fixedDate = new Date(date);
       const User = await Users.findAll({
         attributes: ["id", "phoneNumber", "gmail", "createdAt"],
         where: {
-             createdAt: { [Op.like]: `%${date}` },
+          createdAt: {
+            [Op.between]: [
+              fixedDate,
+              new Date(fixedDate.getTime() + 24 * 60 * 60 * 1000),
+            ], // Assuming you want actions for the entire day
+          },
         },
         order: [["id", "DESC"]],
       });
@@ -34,7 +41,7 @@ const GetAllUserData = async (req, res) => {
     }
     const User = await Users.findAll({
       attributes: ["id", "phoneNumber", "gmail", "createdAt"],
-      order:[['id','DESC']]
+      order: [["id", "DESC"]],
     });
     return res.status(200).json({ success: true, User });
   } catch (error) {
@@ -47,7 +54,7 @@ const GetAllUserData = async (req, res) => {
 
 const getAllCarData = async (req, res) => {
   try {
-    const { filter,data } = req.body;
+    const { filter, data } = req.body;
     if (filter) {
       const Car = await Cars.findAll({
         attributes: [
@@ -57,13 +64,13 @@ const getAllCarData = async (req, res) => {
           "carMark",
           "vehicleTypeHy",
           "insuranceEndDate",
-          "inspection"
+          "inspection",
         ],
         where: {
           [Op.or]: [
             +filter && { id: filter },
             { carNumber: { [Op.like]: `%${filter}` } },
-            +filter && { userId:filter },
+            +filter && { userId: filter },
           ],
         },
         order: [["id", "DESC"]],
@@ -71,16 +78,30 @@ const getAllCarData = async (req, res) => {
 
       return res.status(200).json({ success: true, Car });
     }
-    if(date){
-      const Car = await Cars.findAll({
-        attributes: ["id", "phoneNumber", "gmail", "createdAt"],
+    if (date) {
+      const fixedDate = new Date(date);
+      const Car =  await Cars.findAll({
+        attributes: [
+          "carTechNumber",
+          "userId",
+          "carNumber",
+          "carMark",
+          "vehicleTypeHy",
+          "insuranceEndDate",
+          "inspection",
+        ],
         where: {
-             createdAt: { [Op.like]: `%${date}` },
+          createdAt: {
+            [Op.between]: [
+              fixedDate,
+              new Date(fixedDate.getTime() + 24 * 60 * 60 * 1000),
+            ], // Assuming you want actions for the entire day
+          },
         },
         order: [["id", "DESC"]],
       });
 
-      return res.status(200).json({ success: true, Car });
+      return res.status(200).json({ success: true, User });
     }
     const Car = await Cars.findAll({
       attributes: [
@@ -90,9 +111,9 @@ const getAllCarData = async (req, res) => {
         "carMark",
         "vehicleTypeHy",
         "insuranceEndDate",
-        "inspection"
+        "inspection",
       ],
-      order:[['id','DESC']]
+      order: [["id", "DESC"]],
     });
     return res.status(200).json({ success: true, Car });
   } catch (error) {
@@ -105,17 +126,19 @@ const getAllCarData = async (req, res) => {
 
 const getAllComplaintsData = async (req, res) => {
   try {
-    let Complaint = await Complaints.findAll({ 
-      include: [
-        { model: Users, as: 'sender', attributes:['phoneNumber'] },
-        { model: Users, as: 'receiver', attributes:['phoneNumber']},
-      ],      order:[['id','DESC']],
-      where: {
-        "$Complaints.id$": { [Sequelize.Op.ne]: null },
-      },
-  });
-
-    return res.status(200).json({ success: true, Complaint });
+    
+    if(filter){
+      let Complaint = await Complaints.findAll({
+        include: [
+          { model: Users, as: "sender", attributes: ["phoneNumber"] },
+          { model: Users, as: "receiver", attributes: ["phoneNumber"] },
+        ],
+        order: [["id", "DESC"]],
+        where: {
+          "$Complaints.id$": { [Sequelize.Op.ne]: null },
+        },
+      });
+    }
   } catch (error) {
     console.log(error);
     return res
@@ -124,8 +147,10 @@ const getAllComplaintsData = async (req, res) => {
   }
 };
 
-const getAllPaymentData = async(req,res)=>{
+const getAllPaymentData = async (req, res) => {
   try {
+    const {filter,date} = req.body;
+
     const connection = mysql.createConnection({
       host: "localhost",
       user: "root",
@@ -133,26 +158,46 @@ const getAllPaymentData = async(req,res)=>{
       password: process.env.MYSQL_PASSWORD,
     });
 
+    if(filter){
+      connection.query(
+        `SELECT *
+        FROM orders
+        WHERE is_autoclub = 1
+          AND (id = ${filter} OR phoneNumber LIKE ${'filter%'})
+        ORDER BY id DESC;`,
+        async function (err, results) {
+          if (err) {
+            console.log(err);
+            return res
+            .status(500)
+            .json({ success: false, message: "Something went wrong." });
+          }
+          return res.status(200).json({ success: true, results });
+      }
+      );
+    }
     connection.query(
-      'SELECT * FROM `orders` WHERE `is_autoclub` = 1 ORDER BY `id` DESC;',
+      "SELECT * FROM `orders` WHERE `is_autoclub` = 1 ORDER BY `id` DESC;",
       async function (err, results) {
         if (err) {
           console.log(err);
-          return res.status(500).json({success:false, message: "Something went wrong." });
+          return res
+          .status(500)
+          .json({ success: false, message: "Something went wrong." });
         }
-          return res.status(200).json({success:true,results})       
-        })
+        return res.status(200).json({ success: true, results });
+    }
+    );
   } catch (error) {
     console.log(error);
     return res
       .status(500)
       .json({ success: false, message: "Something went wrong." });
   }
-}
+};
 module.exports = {
   GetAllUserData,
   getAllCarData,
   getAllComplaintsData,
-  getAllPaymentData
+  getAllPaymentData,
 };
-
