@@ -29,6 +29,7 @@ const GetStatons = async (req, res) => {
 
       return e;
     });
+    
     const stationsWithDistances = stations.map((station) => {
       const distance = calculateDistance(
         latitude,
@@ -133,7 +134,25 @@ const GetServicesForPay = async (req, res) => {
       return res
         .status(404)
         .json({ successs: false, message: "Car was not found." });
-       
+
+        await fetch(
+          "https://api.onepay.am/autoclub/payment-service/select-station",
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization:
+                "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+            },
+            body: JSON.stringify({
+              service_request_id: Car.serviceRequestId,
+              station:1,
+              vehicle_types: Car.vehicleTypeEn,
+            }),
+          }
+        );
+
     let services = await fetch(
       "https://api.onepay.am/autoclub/payment-service/services",
       {

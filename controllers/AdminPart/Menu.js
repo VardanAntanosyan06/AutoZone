@@ -110,7 +110,7 @@ const getAllPaymentData = async(req,res)=>{
     });
 
     connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` =1;",
+      'SELECT * FROM `orders` WHERE `is_autoclub` = 1 ORDER BY `id` DESC;',
       async function (err, results) {
         if (err) {
           console.log(err);
