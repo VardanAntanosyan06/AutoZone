@@ -19,3 +19,7 @@ const checkisAdmin = () =>{
     }
   };
 };
+
+module.exports ={
+    checkisAdmin
+}
