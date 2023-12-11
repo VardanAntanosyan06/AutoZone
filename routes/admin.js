@@ -7,6 +7,6 @@ router.post("/login",controller.Login)
 router.get("/isLogined",controller.isLogined)
 router.post("/getAllUserData",checkisAdmin(),MenuController.GetAllUserData)
 router.post("/getAllCarData",checkisAdmin(),MenuController.getAllCarData)
-router.get("/getAllComplaintsData",checkisAdmin(),MenuController.getAllComplaintsData)
+router.post("/getAllComplaintsData",checkisAdmin(),MenuController.getAllComplaintsData)
 router.get("/getAllPaymentData",checkisAdmin(),MenuController.getAllPaymentData)
 module.exports = router;

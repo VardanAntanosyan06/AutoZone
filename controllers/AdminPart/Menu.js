@@ -126,7 +126,7 @@ const getAllCarData = async (req, res) => {
 
 const getAllComplaintsData = async (req, res) => {
   try {
-    
+    const {filter} = req.body;
     if(filter){
       let Complaint = await Complaints.findAll({
         include: [
@@ -136,9 +136,22 @@ const getAllComplaintsData = async (req, res) => {
         order: [["id", "DESC"]],
         where: {
           "$Complaints.id$": { [Sequelize.Op.ne]: null },
+           phoneNumber: { [Op.like]: `%${filter}` },
         },
       });
+      return res.status(200).json({success:true,Complaint})
     }
+    let Complaint = await Complaints.findAll({
+      include: [
+        { model: Users, as: "sender", attributes: ["phoneNumber"] },
+        { model: Users, as: "receiver", attributes: ["phoneNumber"] },
+      ],
+      order: [["id", "DESC"]],
+      where: {
+        "$Complaints.id$": { [Sequelize.Op.ne]: null },
+      },
+    });
+    return res.status(200).json({success:true,Complaint})
   } catch (error) {
     console.log(error);
     return res
