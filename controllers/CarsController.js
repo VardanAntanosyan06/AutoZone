@@ -125,7 +125,7 @@ const AddCar = async (req, res) => {
         insuranceInfo: carInfo.insurance_info.insurance_name,
         insuranceEndDate:
           new Date(carInfo.insurance_info.end_date) != "Invalid Date"
-            ? new Date(carInfo.inspection).toISOString()
+            ? new Date(carInfo.end_date).toISOString()
             : null,
         inspection: new Date(carInfo.inspection).toISOString(),
         serviceRequestId: carInfo.service_request_id,
@@ -254,7 +254,7 @@ const UpdateCarInspection = async (req, res) => {
   try {
     const { techNumber, inspection } = req.body;
     const Car = await Cars.findOne({ where: { carTechNumber: techNumber } });
-    
+
     if (!Car)
       return res
         .status(404)
