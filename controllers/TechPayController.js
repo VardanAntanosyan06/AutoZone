@@ -380,7 +380,7 @@ const TellcelPayment = async (req, res) => {
     }
     return res
       .status(401)
-      .json({ success: false, message: "Token or receiverId cannot be empty" });
+      .json({ success: false, message: "Token cannot be empty" });
   } catch (error) {
     console.log(error);
     return res
