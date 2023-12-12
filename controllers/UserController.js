@@ -553,6 +553,45 @@ const GetDAHKInfo = async (req, res) => {
   }
 };
 
+const DeleteUser = async (req, res) => {
+  try {
+    let { authorization: token } = req.headers;
+    if (token) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id","phoneNumber"],
+        include: [{ model: Cars, attributes: ["carNumber"] }],
+        where: { token },
+      });
+      if(User){
+
+        await Cars.destroy({
+          where: { userId: User.id },
+        });
+        const status = await Users.destroy({
+          where: { phoneNumber:User.phoneNumber },
+        });
+        if (status === 1)
+        return res
+      .status(200)
+      .json({
+        success: true,
+        message: "The user was deleted successfully.",
+      });
+    }
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    return res
+      .status(401)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+};
+
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -566,4 +605,5 @@ module.exports = {
   UpdateUserImage,
   sendComplaint,
   GetDAHKInfo,
+  DeleteUser
 };

@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { calculateDistance } = require("./lib");
 const { Cars } = require("../models");
 const { Users } = require("../models");
-const {SubscribtionPayment} = require("../models")
+const { SubscribtionPayment } = require("../models");
 const { createClient, setex } = require("redis");
 var CryptoJS = require("crypto-js");
 
@@ -31,7 +31,7 @@ const GetStatons = async (req, res) => {
 
       return e;
     });
-    
+
     const stationsWithDistances = stations.map((station) => {
       const distance = calculateDistance(
         latitude,
@@ -112,8 +112,7 @@ const GetAllStatons = async (req, res) => {
       if (err) {
         throw err;
       }
-    }
-    );
+    });
     stations = JSON.parse(stations);
 
     return res.status(200).json({ stations });
@@ -125,7 +124,7 @@ const GetAllStatons = async (req, res) => {
 
 const GetServicesForPay = async (req, res) => {
   try {
-    const {techNumber } = req.body;
+    const { techNumber } = req.body;
     if (!techNumber)
       return res
         .status(403)
@@ -137,23 +136,23 @@ const GetServicesForPay = async (req, res) => {
         .status(404)
         .json({ successs: false, message: "Car was not found." });
 
-        await fetch(
-          "https://api.onepay.am/autoclub/payment-service/select-station",
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              Authorization:
-                "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-            },
-            body: JSON.stringify({
-              service_request_id: Car.serviceRequestId,
-              station:1,
-              vehicle_types: Car.vehicleTypeEn,
-            }),
-          }
-        );
+    await fetch(
+      "https://api.onepay.am/autoclub/payment-service/select-station",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+        },
+        body: JSON.stringify({
+          service_request_id: Car.serviceRequestId,
+          station: 1,
+          vehicle_types: Car.vehicleTypeEn,
+        }),
+      }
+    );
 
     let services = await fetch(
       "https://api.onepay.am/autoclub/payment-service/services",
@@ -211,7 +210,8 @@ const GetOrders = async (req, res) => {
       }
     );
 
-    if (!payInfo.ok) return res.status(500).json({ error: "Failed to fetch pay info" });
+    if (!payInfo.ok)
+      return res.status(500).json({ error: "Failed to fetch pay info" });
     payInfo = await payInfo.json();
 
     return res.status(200).json({ success: true, payInfo });
@@ -223,7 +223,7 @@ const GetOrders = async (req, res) => {
 
 const GetPaymentURLArca = async (req, res) => {
   try {
-    const { techNumber, station, services,redirectUri } = req.body;
+    const { techNumber, station, services, redirectUri } = req.body;
 
     if (!techNumber || !station)
       return res.status(403).json({
@@ -267,7 +267,7 @@ const GetPaymentURLArca = async (req, res) => {
         request: User.Cars[0].serviceRequestId,
       }),
     });
-    
+
     let paymentResponse = await fetch(
       "https://api.onepay.am/autoclub/payment-service/pay",
       {
@@ -282,11 +282,16 @@ const GetPaymentURLArca = async (req, res) => {
           service_request_id: User.Cars[0].serviceRequestId,
           station,
           services,
-          redirectUri
+          redirectUri,
         }),
       }
     );
-    console.log(User.Cars[0].serviceRequestId,station,User.Cars[0].vehicleTypeEn,services);
+    console.log(
+      User.Cars[0].serviceRequestId,
+      station,
+      User.Cars[0].vehicleTypeEn,
+      services
+    );
     if (!paymentResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
@@ -301,49 +306,81 @@ const GetPaymentURLArca = async (req, res) => {
 
 const TellcelPayment = async (req, res) => {
   try {
-    const {amount} = req.body;
+    const { amount } = req.body;
     let { authorization: token } = req.headers;
-
+    if (token) {
       token = token.replace("Bearer ", "");
       let User = await Users.findOne({
-        attributes: ["id","phoneNumber"],
+        attributes: ["id", "phoneNumber"],
         where: { token },
-      })
-    await SubscribtionPayment.destroy({
-      where:{
-        userId: User.id,
-      }
-    })
-    const {id} = await SubscribtionPayment.create({
-      userId: User.id,
-      endDate: new Date(),
-      paymentWay: "Tellcel"
-    })
-        const buyer = `+${User.phoneNumber}`
+      });
+      if (User) {
+        await SubscribtionPayment.destroy({
+          where: {
+            userId: User.id,
+          },
+        });
+        const { id } = await SubscribtionPayment.create({
+          userId: User.id,
+          endDate: new Date(),
+          paymentWay: "Tellcel",
+        });
+        const buyer = `+${User.phoneNumber}`;
         const desc = `DESCRIPTION`;
-        const description = Buffer.from(desc).toString('base64');
+        const description = Buffer.from(desc).toString("base64");
         const key = process.env.TELCELL_PASSWORD; // ID
         const shop_id = process.env.TELCELL_ID; // PASSWORD
         const currency = "51";
         const sum = amount;
         const valid_days = "1";
-        const issuer_id = Buffer.from(id.toString()).toString('base64'); // orderId from your database
-        const hk = key + shop_id + buyer + currency + sum + description + valid_days + issuer_id;
-        const hash = CryptoJS.MD5(hk).toString()
+        const issuer_id = Buffer.from(id.toString()).toString("base64"); // orderId from your database
+        const hk =
+          key +
+          shop_id +
+          buyer +
+          currency +
+          sum +
+          description +
+          valid_days +
+          issuer_id;
+        const hash = CryptoJS.MD5(hk).toString();
 
-        const merchant_url = 'https://telcellmoney.am/invoices';
+        const merchant_url = "https://telcellmoney.am/invoices";
 
-        const q = merchant_url + '?bill:issuer=' + encodeURIComponent(shop_id) + '&buyer=' + encodeURIComponent(buyer) + '&currency=' + currency + '&sum=' + sum + '&description=' + encodeURIComponent(description) + '&issuer_id=' + encodeURIComponent(issuer_id) + '&valid_days=' + valid_days + '&checksum=' + hash;
-        console.log(q,hash);
-        await fetch(q,
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json"
-            }})
+        const q =
+          merchant_url +
+          "?bill:issuer=" +
+          encodeURIComponent(shop_id) +
+          "&buyer=" +
+          encodeURIComponent(buyer) +
+          "&currency=" +
+          currency +
+          "&sum=" +
+          sum +
+          "&description=" +
+          encodeURIComponent(description) +
+          "&issuer_id=" +
+          encodeURIComponent(issuer_id) +
+          "&valid_days=" +
+          valid_days +
+          "&checksum=" +
+          hash;
+        console.log(q, hash);
+        await fetch(q, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        });
 
-        return res.json({success:true})
+        return res.json({ success: true });
+      }
+      return res.status(401).json("User not found");
+    }
+    return res
+      .status(401)
+      .json({ success: false, message: "Token or receiverId cannot be empty" });
   } catch (error) {
     console.log(error);
     return res
@@ -358,5 +395,5 @@ module.exports = {
   GetPaymentURLArca,
   GetOrders,
   GetAllStatons,
-  TellcelPayment
+  TellcelPayment,
 };

@@ -14,6 +14,7 @@ router.patch("/updateUserImage",controller.UpdateUserImage)
 router.post("/login",controller.Login)
 router.post("/sendComplaint",controller.sendComplaint)
 router.delete("/deleteUserForTesting",controller.deleteUserForTesting)
+router.delete("/deleteUser",controller.DeleteUser)
 
 
 module.exports = router;
