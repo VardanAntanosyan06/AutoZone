@@ -2,7 +2,9 @@ const fetch = require("node-fetch");
 const { calculateDistance } = require("./lib");
 const { Cars } = require("../models");
 const { Users } = require("../models");
+const {SubscribtionPayment} = require("../models")
 const { createClient, setex } = require("redis");
+var CryptoJS = require("crypto-js");
 
 const GetStatons = async (req, res) => {
   try {
@@ -297,15 +299,64 @@ const GetPaymentURLArca = async (req, res) => {
   }
 };
 
-const GetPaymentURLIdram = async (req, res) => {
+const TellcelPayment = async (req, res) => {
   try {
-    // const {}
-  } catch (error) {}
+    const {amount} = req.body;
+    let { authorization: token } = req.headers;
+
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id","phoneNumber"],
+        where: { token },
+      })
+    await SubscribtionPayment.destroy({
+      where:{
+        userId: User.id,
+      }
+    })
+    const {id} = await SubscribtionPayment.create({
+      userId: User.id,
+      endDate: new Date(),
+      paymentWay: "Tellcel"
+    })
+        const buyer = `+${User.phoneNumber}`
+        const desc = `DESCRIPTION`;
+        const description = Buffer.from(desc).toString('base64');
+        const key = process.env.TELCELL_PASSWORD; // ID
+        const shop_id = process.env.TELCELL_ID; // PASSWORD
+        const currency = "51";
+        const sum = amount;
+        const valid_days = "1";
+        const issuer_id = Buffer.from(id.toString()).toString('base64'); // orderId from your database
+        const hk = key + shop_id + buyer + currency + sum + description + valid_days + issuer_id;
+        const hash = CryptoJS.MD5(hk).toString()
+
+        const merchant_url = 'https://telcellmoney.am/invoices';
+
+        const q = merchant_url + '?bill:issuer=' + encodeURIComponent(shop_id) + '&buyer=' + encodeURIComponent(buyer) + '&currency=' + currency + '&sum=' + sum + '&description=' + encodeURIComponent(description) + '&issuer_id=' + encodeURIComponent(issuer_id) + '&valid_days=' + valid_days + '&checksum=' + hash;
+        console.log(q,hash);
+        await fetch(q,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            }})
+
+        return res.json({success:true})
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
 };
+
 module.exports = {
   GetStatons,
   GetServicesForPay,
   GetPaymentURLArca,
   GetOrders,
   GetAllStatons,
+  TellcelPayment
 };

@@ -227,6 +227,8 @@ const getAllPaymentData = async (req, res) => {
       .json({ success: false, message: "Something went wrong." });
   }
 };
+
+
 module.exports = {
   GetAllUserData,
   getAllCarData,

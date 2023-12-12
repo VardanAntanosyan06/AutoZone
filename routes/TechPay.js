@@ -8,6 +8,7 @@ router.post("/getAllStations",checkCacheStations,controller.GetAllStatons)
 router.post("/getServicesForPay",controller.GetServicesForPay)
 router.post("/getPaymentURL",controller.GetPaymentURLArca)
 router.post("/getOrders",controller.GetOrders)
+router.post("/TellcelPayment",controller.TellcelPayment)
 // router.patch("/updateCarVehicleType",controller.UpdateCarVehicleType)
 // router.delete("/deleteCar/:techNumber",controller.DeleteCar)
 
