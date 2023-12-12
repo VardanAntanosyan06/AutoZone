@@ -376,7 +376,7 @@ const TellcelPayment = async (req, res) => {
 
         return res.json({ success: true });
       }
-      return res.status(401).json("User not found");
+      return res.status(401).json({message:"User not found"});
     }
     return res
       .status(401)
