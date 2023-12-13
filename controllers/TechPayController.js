@@ -376,7 +376,7 @@ const TellcelPayment = async (req, res) => {
 
         return res.json({ success: true });
       }
-      return res.status(401).json({message:"User not found"});
+      return res.status(401).json({ message: "User not found" });
     }
     return res
       .status(401)
@@ -389,6 +389,198 @@ const TellcelPayment = async (req, res) => {
   }
 };
 
+const IdramPayment = async (req, res) => {
+  try {
+    const { amount } = req.body;
+    let { authorization: token } = req.headers;
+    if (token) {
+      token = token.replace("Bearer ", "");
+      let User = await Users.findOne({
+        attributes: ["id", "phoneNumber"],
+        where: { token },
+      });
+      if (User) {
+        const SECRET_KEY = process.env.IDRAM_PASSWORD;
+        const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+
+        if (
+          typeof request.EDP_PRECHECK !== "undefined" &&
+          typeof request.EDP_BILL_NO !== "undefined" &&
+          typeof request.EDP_REC_ACCOUNT !== "undefined" &&
+          typeof request.EDP_AMOUNT !== "undefined"
+        ) {
+          if (request.EDP_PRECHECK === "YES") {
+            if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
+              const bill_no = request.EDP_BILL_NO;
+              return "OK";
+            }
+          }
+        }
+
+        if (
+          typeof request.EDP_PAYER_ACCOUNT !== "undefined" &&
+          typeof request.EDP_BILL_NO !== "undefined" &&
+          typeof request.EDP_REC_ACCOUNT !== "undefined" &&
+          typeof request.EDP_AMOUNT !== "undefined" &&
+          typeof request.EDP_TRANS_ID !== "undefined" &&
+          typeof request.EDP_CHECKSUM !== "undefined"
+        ) {
+          const txtToHash =
+            EDP_REC_ACCOUNT +
+            ":" +
+            request.EDP_AMOUNT +
+            ":" +
+            SECRET_KEY +
+            ":" +
+            request.EDP_BILL_NO +
+            ":" +
+            request.EDP_PAYER_ACCOUNT +
+            ":" +
+            request.EDP_TRANS_ID +
+            ":" +
+            request.EDP_TRANS_DATE;
+
+          if (
+            request.EDP_CHECKSUM.toUpperCase() !==
+            this.md5(txtToHash).toUpperCase()
+          ) {
+            return "Error";
+          } else {
+            const amount = request.EDP_AMOUNT;
+            if (amount > 0) {
+              let PaymentModel;
+              try {
+                PaymentModel = new PaymentNotification().getInstance();
+              } catch {
+                PaymentModel = mongoose.model("payment-notifications");
+              }
+              let payment = await PaymentModel.findOne({
+                orderId: request.EDP_BILL_NO,
+              });
+
+              if (typeof payment !== "undefined") {
+                // Update Payment Status
+                payment.amount = amount;
+                payment.paid = true;
+                await payment.save();
+                return "OK";
+              }
+            }
+          }
+        }
+        return res.json({ success: true });
+      }
+      return res.status(401).json({ message: "User not found" });
+    }
+    return res
+      .status(401)
+      .json({ success: false, message: "Token cannot be empty" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+};
+
+const SucccessURL = async (req, res) => {
+  try {
+    const {url}  = req.body;
+
+    if(url){
+      return res.status(200).json(url)
+    }
+    return res.status(403).json({success:false,message:"URL cannot be empty"})
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+};
+
+const FailURL = async (req, res) => {
+  try {
+    const {url}  = req.body;
+
+    if(url){
+      return res.status(200).json(url)
+    }
+    return res.status(403).json({success:false,message:"URL cannot be empty"})
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong." });
+  }
+};
+
+// const confirmIdram = async (request)=> {
+//   const SECRET_KEY = process.env.IDRAM_PASSWORD;
+//   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+
+//   if (
+//       typeof request.EDP_PRECHECK !== 'undefined' &&
+//       typeof request.EDP_BILL_NO !== 'undefined' &&
+//       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
+//       typeof request.EDP_AMOUNT !== 'undefined'
+//   ) {
+//       if (request.EDP_PRECHECK === 'YES') {
+//           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
+//               const bill_no = request.EDP_BILL_NO;
+//               return 'OK';
+//           }
+//       }
+//   }
+//   if (
+//       typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
+//       typeof request.EDP_BILL_NO !== 'undefined' &&
+//       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
+//       typeof request.EDP_AMOUNT !== 'undefined' &&
+//       typeof request.EDP_TRANS_ID !== 'undefined' &&
+//       typeof request.EDP_CHECKSUM !== 'undefined'
+//   ) {
+//       const txtToHash =
+//           EDP_REC_ACCOUNT + ':' +
+//           request.EDP_AMOUNT + ':' +
+//           SECRET_KEY + ':' +
+//           request.EDP_BILL_NO + ':' +
+//           request.EDP_PAYER_ACCOUNT + ':' +
+//           request.EDP_TRANS_ID + ':' +
+//           request.EDP_TRANS_DATE;
+
+//       if (
+//           request.EDP_CHECKSUM.toUpperCase() !==
+//           CryptoJS.MD5(txtToHash).toUpperCase()
+//       ) {
+//           return 'Error';
+//       } else {
+//           const amount = request.EDP_AMOUNT;
+//           if (amount > 0) {
+//               let PaymentModel
+//               try {
+//                   PaymentModel = new PaymentNotification().getInstance();
+//               } catch {
+//                   PaymentModel = mongoose.model('payment-notifications');
+//               }
+//               let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
+
+//               if (typeof payment !== 'undefined') {
+//                   // Update Payment Status
+//                   payment.amount = amount;
+//                   payment.paid = true;
+//                   await payment.save();
+//                   return 'OK';
+//               }
+//           }
+//       }
+//   }
+// }
+
+const ConfirmIdram = async (request)=> {
+    return "OK"
+}
+
 module.exports = {
   GetStatons,
   GetServicesForPay,
@@ -396,4 +588,7 @@ module.exports = {
   GetOrders,
   GetAllStatons,
   TellcelPayment,
+  SucccessURL,
+  FailURL,
+  ConfirmIdram
 };
