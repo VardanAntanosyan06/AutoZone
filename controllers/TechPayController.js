@@ -391,7 +391,6 @@ const TellcelPayment = async (req, res) => {
 
 const IdramPayment = async (req, res) => {
   try {
-    const { amount } = req.body;
     let { authorization: token } = req.headers;
     if (token) {
       token = token.replace("Bearer ", "");
@@ -400,74 +399,17 @@ const IdramPayment = async (req, res) => {
         where: { token },
       });
       if (User) {
-        const SECRET_KEY = process.env.IDRAM_PASSWORD;
-        const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+        await SubscribtionPayment.destroy({
+          where: {
+            userId: User.id,
+          },
+        });
+        await SubscribtionPayment.create({
+          userId: User.id,
+          endDate: new Date(),
+          paymentWay: "Idram",
+        });
 
-        if (
-          typeof request.EDP_PRECHECK !== "undefined" &&
-          typeof request.EDP_BILL_NO !== "undefined" &&
-          typeof request.EDP_REC_ACCOUNT !== "undefined" &&
-          typeof request.EDP_AMOUNT !== "undefined"
-        ) {
-          if (request.EDP_PRECHECK === "YES") {
-            if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
-              const bill_no = request.EDP_BILL_NO;
-              return "OK";
-            }
-          }
-        }
-
-        if (
-          typeof request.EDP_PAYER_ACCOUNT !== "undefined" &&
-          typeof request.EDP_BILL_NO !== "undefined" &&
-          typeof request.EDP_REC_ACCOUNT !== "undefined" &&
-          typeof request.EDP_AMOUNT !== "undefined" &&
-          typeof request.EDP_TRANS_ID !== "undefined" &&
-          typeof request.EDP_CHECKSUM !== "undefined"
-        ) {
-          const txtToHash =
-            EDP_REC_ACCOUNT +
-            ":" +
-            request.EDP_AMOUNT +
-            ":" +
-            SECRET_KEY +
-            ":" +
-            request.EDP_BILL_NO +
-            ":" +
-            request.EDP_PAYER_ACCOUNT +
-            ":" +
-            request.EDP_TRANS_ID +
-            ":" +
-            request.EDP_TRANS_DATE;
-
-          if (
-            request.EDP_CHECKSUM.toUpperCase() !==
-            this.md5(txtToHash).toUpperCase()
-          ) {
-            return "Error";
-          } else {
-            const amount = request.EDP_AMOUNT;
-            if (amount > 0) {
-              let PaymentModel;
-              try {
-                PaymentModel = new PaymentNotification().getInstance();
-              } catch {
-                PaymentModel = mongoose.model("payment-notifications");
-              }
-              let payment = await PaymentModel.findOne({
-                orderId: request.EDP_BILL_NO,
-              });
-
-              if (typeof payment !== "undefined") {
-                // Update Payment Status
-                payment.amount = amount;
-                payment.paid = true;
-                await payment.save();
-                return "OK";
-              }
-            }
-          }
-        }
         return res.json({ success: true });
       }
       return res.status(401).json({ message: "User not found" });
@@ -515,72 +457,71 @@ const FailURL = async (req, res) => {
   }
 };
 
-// const confirmIdram = async (request)=> {
-//   const SECRET_KEY = process.env.IDRAM_PASSWORD;
-//   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+const ConfirmIdram = async (request,res)=> {
+  const SECRET_KEY = process.env.IDRAM_PASSWORD;
+  const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+  if (
+      typeof request.EDP_PRECHECK !== 'undefined' &&
+      typeof request.EDP_BILL_NO !== 'undefined' &&
+      typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
+      typeof request.EDP_AMOUNT !== 'undefined'
+  ) {
+      if (request.EDP_PRECHECK === 'YES') {
+          if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
+              const bill_no = request.EDP_BILL_NO;
+              return res.json('OK');
+          }
+      }
+  }
+  if (
+      typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
+      typeof request.EDP_BILL_NO !== 'undefined' &&
+      typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
+      typeof request.EDP_AMOUNT !== 'undefined' &&
+      typeof request.EDP_TRANS_ID !== 'undefined' &&
+      typeof request.EDP_CHECKSUM !== 'undefined'
+  ) {
+      const txtToHash =
+          EDP_REC_ACCOUNT + ':' +
+          request.EDP_AMOUNT + ':' +
+          SECRET_KEY + ':' +
+          request.EDP_BILL_NO + ':' +
+          request.EDP_PAYER_ACCOUNT + ':' +
+          request.EDP_TRANS_ID + ':' +
+          request.EDP_TRANS_DATE;
 
-//   if (
-//       typeof request.EDP_PRECHECK !== 'undefined' &&
-//       typeof request.EDP_BILL_NO !== 'undefined' &&
-//       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
-//       typeof request.EDP_AMOUNT !== 'undefined'
-//   ) {
-//       if (request.EDP_PRECHECK === 'YES') {
-//           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
-//               const bill_no = request.EDP_BILL_NO;
-//               return 'OK';
-//           }
-//       }
-//   }
-//   if (
-//       typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
-//       typeof request.EDP_BILL_NO !== 'undefined' &&
-//       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
-//       typeof request.EDP_AMOUNT !== 'undefined' &&
-//       typeof request.EDP_TRANS_ID !== 'undefined' &&
-//       typeof request.EDP_CHECKSUM !== 'undefined'
-//   ) {
-//       const txtToHash =
-//           EDP_REC_ACCOUNT + ':' +
-//           request.EDP_AMOUNT + ':' +
-//           SECRET_KEY + ':' +
-//           request.EDP_BILL_NO + ':' +
-//           request.EDP_PAYER_ACCOUNT + ':' +
-//           request.EDP_TRANS_ID + ':' +
-//           request.EDP_TRANS_DATE;
+      if (
+          request.EDP_CHECKSUM.toUpperCase() !==
+          CryptoJS.MD5(txtToHash).toUpperCase()
+      ) {
+          return res.json('Error');
+      } else {
+          const amount = request.EDP_AMOUNT;
+          if (amount > 0) {
+              let PaymentModel
+              try {
+                  PaymentModel = new PaymentNotification().getInstance();
+              } catch {
+                  PaymentModel = mongoose.model('payment-notifications');
+              }
+              let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
 
-//       if (
-//           request.EDP_CHECKSUM.toUpperCase() !==
-//           CryptoJS.MD5(txtToHash).toUpperCase()
-//       ) {
-//           return 'Error';
-//       } else {
-//           const amount = request.EDP_AMOUNT;
-//           if (amount > 0) {
-//               let PaymentModel
-//               try {
-//                   PaymentModel = new PaymentNotification().getInstance();
-//               } catch {
-//                   PaymentModel = mongoose.model('payment-notifications');
-//               }
-//               let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
-
-//               if (typeof payment !== 'undefined') {
-//                   // Update Payment Status
-//                   payment.amount = amount;
-//                   payment.paid = true;
-//                   await payment.save();
-//                   return 'OK';
-//               }
-//           }
-//       }
-//   }
-// }
-
-const ConfirmIdram = async (request)=> {
-    return "OK"
+              if (typeof payment !== 'undefined') {
+                  // Update Payment Status
+                  payment.amount = amount;
+                  payment.paid = true;
+                  await payment.save();
+                  return res.json('OK');
+              }
+          }
+      }
+  }
 }
 
+// const ConfirmIdram = async (request)=> {
+//     return "OK"
+// }
+ 
 module.exports = {
   GetStatons,
   GetServicesForPay,
@@ -590,5 +531,6 @@ module.exports = {
   TellcelPayment,
   SucccessURL,
   FailURL,
-  ConfirmIdram
+  ConfirmIdram,
+  IdramPayment
 };
