@@ -1,4 +1,4 @@
-const { Users } = require("../models");
+const { Users,PaymentStatusOne,SubscribtionPayment } = require("../models");
 const { Cars } = require("../models");
 const { Complaints } = require("../models");
 const moment = require("moment");
@@ -348,12 +348,7 @@ const GetUserData = async (req, res) => {
       let User = await Users.findOne({
         attributes: ["id", "fullName", "gmail", "phoneNumber", "image"],
         where: { token },
-        // include: [
-        //   {
-        //     model: Cars,
-        //     order: [["id", "ASC"]],
-        //   },
-        // ],
+        include:[{model:SubscribtionPayment,attributes:['id','endDate']}]
       });
       const Car = await Cars.findAll({
         where: { userId: User.id },
@@ -363,8 +358,14 @@ const GetUserData = async (req, res) => {
       if (User) {
         // User['Cars'] = Car
         User.setDataValue("Cars", Car);
+        if(User.SubscribtionPayments.length===0 || (User.SubscribtionPayments.length >0 && new Date(User.SubscribtionPayments[0].endDate)<new Date() )){
+          User.setDataValue("isAcive", false);        
+          return res.json({ success: true, User });
+        }
+      else{
+        User.setDataValue("isAcive", true);        
         return res.json({ success: true, User });
-      }
+      }}
       return res
         .status(401)
         .json({ success: false, message: "User not found!" });

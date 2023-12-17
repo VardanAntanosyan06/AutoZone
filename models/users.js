@@ -38,13 +38,18 @@ module.exports = (sequelize, DataTypes) => {
   const Notifications = sequelize.define("Notifications");
   const PaymentStatusOne = sequelize.define("PaymentStatusOne")
   const Complaints = sequelize.define("Complaints")
+  const SubscribtionPayment = sequelize.define("SubscribtionPayment")
+
+
   Users.hasMany(Cars, {
     foreignKey: "userId",
   });
   Users.hasMany(PaymentStatusOne, 
     { foreignKey: 'phoneNumber', sourceKey: 'phoneNumber' }
   );
-
+  Users.hasMany(SubscribtionPayment, 
+    { foreignKey: 'userId' }
+  );
   Users.hasMany(Notifications,{
     foreignKey:"senderId"
   })
