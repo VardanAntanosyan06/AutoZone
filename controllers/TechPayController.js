@@ -524,7 +524,7 @@ const ConfirmIdram = async (request,res)=> {
           }
       }
   }
-  return res.send('Error');
+  return res.send('OK');
 }
 
 module.exports = {
