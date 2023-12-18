@@ -473,7 +473,7 @@ const ConfirmIdram = async (request,res)=> {
         console.log("second if");
           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
               const bill_no = request.EDP_BILL_NO;
-              return 'OK';
+              return res.send('OK');
           }
       }
   }
@@ -499,7 +499,7 @@ const ConfirmIdram = async (request,res)=> {
           request.EDP_CHECKSUM.toUpperCase() !==
           CryptoJS.MD5(txtToHash).toUpperCase()
       ) {
-          return 'Error';
+          return res.send('Error');
       } else {
           const amount = request.EDP_AMOUNT;
           if (amount > 0) {
@@ -519,12 +519,12 @@ const ConfirmIdram = async (request,res)=> {
                   let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
                   UserSubscribtionPayment.endDate = new Date();
                   UserSubscribtionPayment.save()
-                  return 'OK';
+                  return res.send('OK');
               // }
           }
       }
   }
-  return 'Error';
+  return res.send('Error');
 }
 
 module.exports = {
