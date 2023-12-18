@@ -460,14 +460,13 @@ const FailURL = async (req, res) => {
 const ConfirmIdram = async (request,res)=> {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
-  console.log("+-------------------------+",SECRET_KEY,EDP_REC_ACCOUNT);
+  console.log(request.EDP_PRECHECK,request.EDP_BILL_NO,request.EDP_REC_ACCOUNT,request.EDP_AMOUNT,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
   if (
       typeof request.EDP_PRECHECK !== 'undefined' &&
       typeof request.EDP_BILL_NO !== 'undefined' &&
       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
       typeof request.EDP_AMOUNT !== 'undefined'
   ) {
-    console.log("first if");
       if (request.EDP_PRECHECK === 'YES') {
         console.log("second if");
           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
@@ -476,7 +475,7 @@ const ConfirmIdram = async (request,res)=> {
           }
       }
   }
-  if (
+  if (  
       typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
       typeof request.EDP_BILL_NO !== 'undefined' &&
       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
@@ -484,6 +483,7 @@ const ConfirmIdram = async (request,res)=> {
       typeof request.EDP_TRANS_ID !== 'undefined' &&
       typeof request.EDP_CHECKSUM !== 'undefined'
   ) {
+
       const txtToHash =
           EDP_REC_ACCOUNT + ':' +
           request.EDP_AMOUNT + ':' +
@@ -501,24 +501,26 @@ const ConfirmIdram = async (request,res)=> {
       } else {
           const amount = request.EDP_AMOUNT;
           if (amount > 0) {
-              let PaymentModel
-              try {
-                  // PaymentModel = new PaymentNotification().getInstance();
-              } catch {
+              // let PaymentModel
+              // try {
+                  PaymentModel = new PaymentNotification().getInstance();
+              // } catch {
                   // PaymentModel = mongoose.model('payment-notifications');
-              }
+              // }
               // let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
 
-              if (typeof payment !== 'undefined') {
+              // if (typeof payment !== 'undefined') {
                   // Update Payment Status
                   // payment.amount = amount;
                   // payment.paid = true;
                   // await payment.save();
+                  let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
+                  UserSubscribtionPayment.endDate = new Date();
+                  UserSubscribtionPayment.save()
                   return res.json('OK');
-              }
+              // }
           }
       }
-      console.log("++++++++++++++++++++");
   }
 }
 
