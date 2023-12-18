@@ -461,6 +461,8 @@ const ConfirmIdram = async (request,res)=> {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
   console.log(request.EDP_PRECHECK,request.EDP_BILL_NO,request.EDP_REC_ACCOUNT,request.EDP_AMOUNT,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
+  console.log(request.receiverName,request.receiverId,request.title,request.amount,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
+
   if (
       typeof request.EDP_PRECHECK !== 'undefined' &&
       typeof request.EDP_BILL_NO !== 'undefined' &&
@@ -471,7 +473,7 @@ const ConfirmIdram = async (request,res)=> {
         console.log("second if");
           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
               const bill_no = request.EDP_BILL_NO;
-              return res.json('OK');
+              return 'OK';
           }
       }
   }
@@ -497,7 +499,7 @@ const ConfirmIdram = async (request,res)=> {
           request.EDP_CHECKSUM.toUpperCase() !==
           CryptoJS.MD5(txtToHash).toUpperCase()
       ) {
-          return res.json('Error');
+          return 'Error';
       } else {
           const amount = request.EDP_AMOUNT;
           if (amount > 0) {
@@ -517,18 +519,14 @@ const ConfirmIdram = async (request,res)=> {
                   let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
                   UserSubscribtionPayment.endDate = new Date();
                   UserSubscribtionPayment.save()
-                  return res.json('OK');
+                  return 'OK';
               // }
           }
       }
   }
-  return res.json('Error');
+  return 'Error';
 }
 
-// const ConfirmIdram = async (request)=> {
-//     return "OK"
-// }
- 
 module.exports = {
   GetStatons,
   GetServicesForPay,
