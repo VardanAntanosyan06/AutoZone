@@ -460,13 +460,16 @@ const FailURL = async (req, res) => {
 const ConfirmIdram = async (request,res)=> {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+  console.log("+-------------------------+",SECRET_KEY,EDP_REC_ACCOUNT);
   if (
       typeof request.EDP_PRECHECK !== 'undefined' &&
       typeof request.EDP_BILL_NO !== 'undefined' &&
       typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
       typeof request.EDP_AMOUNT !== 'undefined'
   ) {
+    console.log("first if");
       if (request.EDP_PRECHECK === 'YES') {
+        console.log("second if");
           if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
               const bill_no = request.EDP_BILL_NO;
               return res.json('OK');
@@ -500,21 +503,22 @@ const ConfirmIdram = async (request,res)=> {
           if (amount > 0) {
               let PaymentModel
               try {
-                  PaymentModel = new PaymentNotification().getInstance();
+                  // PaymentModel = new PaymentNotification().getInstance();
               } catch {
-                  PaymentModel = mongoose.model('payment-notifications');
+                  // PaymentModel = mongoose.model('payment-notifications');
               }
-              let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
+              // let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
 
               if (typeof payment !== 'undefined') {
                   // Update Payment Status
-                  payment.amount = amount;
-                  payment.paid = true;
-                  await payment.save();
+                  // payment.amount = amount;
+                  // payment.paid = true;
+                  // await payment.save();
                   return res.json('OK');
               }
           }
       }
+      console.log("++++++++++++++++++++");
   }
 }
 

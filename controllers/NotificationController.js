@@ -99,7 +99,6 @@ const notificationAnswer = async (req, res) => {
   }
 };
 
-
 const getNotificationHistory = async (req, res) => {
   try {
     let { authorization: token } = req.headers;
@@ -137,6 +136,7 @@ const getNotificationHistory = async (req, res) => {
     }
   }
 };
+
 
 
 module.exports = {
