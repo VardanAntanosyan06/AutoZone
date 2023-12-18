@@ -404,13 +404,13 @@ const IdramPayment = async (req, res) => {
             userId: User.id,
           },
         });
-        await SubscribtionPayment.create({
+        const {id} = await SubscribtionPayment.create({
           userId: User.id,
           endDate: new Date(),
           paymentWay: "Idram",
         });
 
-        return res.json({ success: true });
+        return res.json({ success: true,id });
       }
       return res.status(401).json({ message: "User not found" });
     }
