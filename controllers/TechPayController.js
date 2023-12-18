@@ -485,8 +485,7 @@ const ConfirmIdram = async (request,res)=> {
       typeof request.EDP_TRANS_ID !== 'undefined' &&
       typeof request.EDP_CHECKSUM !== 'undefined'
   ) {
-
-      const txtToHash =
+        const txtToHash =
           EDP_REC_ACCOUNT + ':' +
           request.EDP_AMOUNT + ':' +
           SECRET_KEY + ':' +
@@ -516,8 +515,12 @@ const ConfirmIdram = async (request,res)=> {
                   // payment.amount = amount;
                   // payment.paid = true;
                   // await payment.save();
+                  // Get the current date
+                  let currentDate = new Date();
+                  currentDate.setFullYear(currentDate.getFullYear() + 1);
+                  currentDate.toISOString()
                   let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
-                  UserSubscribtionPayment.endDate = new Date();
+                  UserSubscribtionPayment.endDate = currentDate;
                   UserSubscribtionPayment.save()
                   return res.send('OK');
               // }
