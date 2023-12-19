@@ -597,7 +597,7 @@ const checkTelcellPayments = async (req, res) => {
         };
       }
 
-      if (output.status === "PAID") {
+      if (data.status === "PAID") {
         let currentDate = new Date();
         currentDate.setFullYear(currentDate.getFullYear() + 1);
         currentDate = currentDate.toISOString();
