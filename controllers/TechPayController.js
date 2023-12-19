@@ -571,8 +571,6 @@ const checkTelcellPayments = async (req, res) => {
         hash;
         console.log(q);
  
-
-User
 try {
          const response = await fetch(q);
          
