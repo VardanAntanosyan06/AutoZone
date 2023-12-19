@@ -552,6 +552,7 @@ const checkTelcellPayments = async (req, res) => {
       },
     },
   });
+  
   Promise.all(
     TellcelPayments.map(async (e) => {
       let issuer_id = e.orderId;
@@ -572,19 +573,25 @@ const checkTelcellPayments = async (req, res) => {
         issuer_id +
         "&checksum=" +
         hash;
-      let data;
-      await axios
-        .get(q)
-        .then((response) => {
-          data = response.data;
-        })
-        .catch((error) => {
-          data = {
-            error: true,
-            errorData: error,
-          };
-        });
+        console.log(q);
+        let data;
 
+        try {
+            const response = await fetch(q);
+            
+            if (!response.ok) {
+                throw new Error(`Վճարման խափանում: ${response.status}`);
+            }
+        
+            data = await response.json();
+        } catch (error) {
+            data = {
+                error: true,
+                statusCode: 500,
+                message: "Վճարման խափանում",
+                errors: error.message
+            };
+        }
       let output = {};
       data
         .replace(/\n/g, "&")
