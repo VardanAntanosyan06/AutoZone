@@ -325,7 +325,6 @@ const TellcelPayment = async (req, res) => {
           endDate: new Date(),
           paymentWay: "Tellcel",
         });
-
         const buyer = `+${User.phoneNumber}`;
         const desc = `DESCRIPTION`;
         const description = Buffer.from(desc).toString("base64");
@@ -334,7 +333,7 @@ const TellcelPayment = async (req, res) => {
         const currency = "51";
         const sum = amount;
         const valid_days = "1";
-        const issuer_id = Buffer.from(id.toString()).toString("base64"); // orderId from your database
+        const issuer_id = Buffer.from("163s3226".toString()).toString("base64"); // orderId from your database
         const hk =
           key +
           shop_id +
@@ -366,26 +365,27 @@ const TellcelPayment = async (req, res) => {
           valid_days +
           "&checksum=" +
           hash;
-          let data;
-          try {
-              const response = await fetch(q);
-              if (!response.ok) {
-                  throw new Error("Վճարման խափանում");
-              }
-              
-              data = await response.json();
-          } catch (error) {
-              data = {
-                  error: true,
-                  statusCode: 500,
-                  message: "Վճարման խափանում",
-                  errors: error.message
-              };
-          }
-          const payment = await SubscribtionPayment.findOne({where:{id}}) 
-          payment.orderKey = data;
-          payment.save();
-        return res.json({ success: true });
+        console.log(q, hash);
+        let data;
+
+try {
+    const response = await fetch(q);
+    
+    if (!response.ok) {
+        throw new Error(`Վճարման խափանում: ${response.status}`);
+    }
+
+    data = await response.json();
+} catch (error) {
+    data = {
+        error: true,
+        statusCode: 500,
+        message: "Վճարման խափանում",
+        errors: error.message
+    };
+}
+        console.log(data);
+        return res.json({ success: true, data });
       }
       return res.status(401).json({ message: "User not found" });
     }
@@ -538,6 +538,50 @@ const ConfirmIdram = async (request, res) => {
   return res.send("OK");
 };
 
+const checkTelcellPayments = async (req, res) => {
+  let issuer_id = 35;
+  let merchant_url = "https://telcellmoney.am/invoices";
+  let hk = process.env.TELCELL_PASSWORD + process.env.TELCELL_ID + issuer_id;
+  let hash = CryptoJS.MD5(hk).toString();
+  let q =
+    merchant_url +
+    "?check_bill:issuer=" +
+    encodeURIComponent(process.env.TELCELL_ID) +
+    "&invoice=" +
+    orderKey +
+    "&issuer_id=" +
+    issuer_id +
+    "&checksum=" +
+    hash;
+
+  let data = await fetch(q, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  console.log(q);
+  return res.json(data);
+  let output = {};
+  // data.replace(/\n/g, '&').split('&').forEach(function(val) {
+  //     let parts = val.split('=');
+  //     output[parts[0]] = decodeURIComponent(parts[1]);
+  // });
+
+  // payment.telcellStatus = output.status;
+  return res.json(data);
+
+  if (output.status === "PAID") {
+    payment.status = true;
+    payment.paid = true;
+    await this.paymentConfirmedMessage(payment);
+  } else if (output.status === "EXPIRED" || output.status === "REJECTED") {
+    payment.status = true;
+  }
+  await payment.save();
+};
+
 module.exports = {
   GetStatons,
   GetServicesForPay,
@@ -549,4 +593,5 @@ module.exports = {
   FailURL,
   ConfirmIdram,
   IdramPayment,
+  checkTelcellPayments,
 };
