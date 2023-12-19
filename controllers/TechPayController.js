@@ -502,20 +502,6 @@ const ConfirmIdram = async (request,res)=> {
       } else {
           const amount = request.EDP_AMOUNT;
           if (amount > 0) {
-              // let PaymentModel
-              // try {
-                  PaymentModel = new PaymentNotification().getInstance();
-              // } catch {
-                  // PaymentModel = mongoose.model('payment-notifications');
-              // }
-              // let payment = await PaymentModel.findOne({orderId: request.EDP_BILL_NO});
-
-              // if (typeof payment !== 'undefined') {
-                  // Update Payment Status
-                  // payment.amount = amount;
-                  // payment.paid = true;
-                  // await payment.save();
-                  // Get the current date
                   let currentDate = new Date();
                   currentDate.setFullYear(currentDate.getFullYear() + 1);
                   currentDate = currentDate.toISOString()
