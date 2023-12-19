@@ -473,7 +473,6 @@ const ConfirmIdram = async (request, res) => {
     typeof request.EDP_AMOUNT !== "undefined"
   ) {
     if (request.EDP_PRECHECK === "YES") {
-      console.log("second if");
       if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
         const bill_no = request.EDP_BILL_NO;
         return res.send("OK");
