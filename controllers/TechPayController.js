@@ -378,14 +378,9 @@ try {
 
     data = await response.json();
 } catch (error) {
-    data = {
-        error: true,
-        statusCode: 500,
-        message: "Վճարման խափանում",
-        errors: error.message
-    };
+    console.log(error)
 }
-        console.log(data);
+        console.log(data,"********************************///////////////////////////////////");
         let pay = await SubscribtionPayment.findOne({where:{id}})
         pay.orderKey = data;
         pay.save()
