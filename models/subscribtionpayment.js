@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   SubscribtionPayment.init({
     userId: DataTypes.INTEGER,
     endDate: DataTypes.DATE,
-    paymentWay: DataTypes.STRING
+    paymentWay: DataTypes.STRING,
+    orderKey:DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'SubscribtionPayment',

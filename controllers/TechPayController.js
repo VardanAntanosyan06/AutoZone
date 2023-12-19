@@ -325,6 +325,7 @@ const TellcelPayment = async (req, res) => {
           endDate: new Date(),
           paymentWay: "Tellcel",
         });
+
         const buyer = `+${User.phoneNumber}`;
         const desc = `DESCRIPTION`;
         const description = Buffer.from(desc).toString("base64");
@@ -365,15 +366,22 @@ const TellcelPayment = async (req, res) => {
           valid_days +
           "&checksum=" +
           hash;
-        console.log(q, hash);
-        await fetch(q, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
+        let data;
 
+        try {
+          const response = await fetch(q);
+          if (response.ok) {
+            data = await response.json();
+          } else {
+            data = null;;
+          }
+        } catch (error) {
+          data = null;
+        }
+        const payment = SubscribtionPayment.findOne({where:{id}}) 
+        payment.orderKey = data;
+        payment.save();
+        
         return res.json({ success: true });
       }
       return res.status(401).json({ message: "User not found" });
@@ -465,7 +473,7 @@ const ConfirmIdram = async (request, res) => {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
   request = request.body;
- 
+
   if (
     typeof request.EDP_PRECHECK !== "undefined" &&
     typeof request.EDP_BILL_NO !== "undefined" &&

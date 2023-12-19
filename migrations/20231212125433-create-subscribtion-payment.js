@@ -18,6 +18,9 @@ module.exports = {
       paymentWay: {
         type: Sequelize.STRING
       },
+      orderKey:{
+        type:Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
