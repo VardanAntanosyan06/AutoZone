@@ -570,8 +570,8 @@ const checkTelcellPayments = async (req, res) => {
         "&checksum=" +
         hash;
         console.log(q);
- 
-try {
+        try {
+        let data;
          const response = await fetch(q);
          
          if (!response.ok) {
