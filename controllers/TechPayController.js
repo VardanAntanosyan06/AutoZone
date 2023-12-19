@@ -334,7 +334,7 @@ const TellcelPayment = async (req, res) => {
         const currency = "51";
         const sum = amount;
         const valid_days = "1";
-        const issuer_id = Buffer.from("163s3226".toString()).toString("base64"); // orderId from your database
+        const issuer_id = Buffer.from(id.toString()).toString("base64"); // orderId from your database
         const hk =
           key +
           shop_id +
