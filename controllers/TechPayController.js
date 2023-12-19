@@ -378,10 +378,10 @@ const TellcelPayment = async (req, res) => {
         } catch (error) {
           data = null;
         }
-        const payment = SubscribtionPayment.findOne({where:{id}}) 
+        const payment = await SubscribtionPayment.findOne({where:{id}}) 
         payment.orderKey = data;
         payment.save();
-        
+
         return res.json({ success: true });
       }
       return res.status(401).json({ message: "User not found" });
