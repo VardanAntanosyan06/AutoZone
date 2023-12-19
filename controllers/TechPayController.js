@@ -369,23 +369,25 @@ const TellcelPayment = async (req, res) => {
         console.log(q, hash);
         let data;
 
-try {
-    const response = await fetch(q);
-    
-    if (!response.ok) {
-        throw new Error(`Վճարման խափանում: ${response.status}`);
-    }
+        try {
+          const response = await fetch(q);
 
-    data = await response.json();
-} catch (error) {
-    console.log(error)
-}
-        console.log(data,"********************************///////////////////////////////////");
-        let pay = await SubscribtionPayment.findOne({where:{id}})
+          if (!response.ok) {
+            throw new Error(`Վճարման խափանում: ${response.status}`);
+          }
+
+          data = await response.json();
+        } catch (error) {
+          console.log(error);
+        }
+        console.log(
+          data,
+          "********************************///////////////////////////////////"
+        );
+        let pay = await SubscribtionPayment.findOne({ where: { id } });
         pay.orderKey = data;
-        pay.save()
+        pay.save();
         return res.json({ success: true, data });
-        
       }
       return res.status(401).json({ message: "User not found" });
     }
@@ -539,49 +541,69 @@ const ConfirmIdram = async (request, res) => {
 };
 
 const checkTelcellPayments = async (req, res) => {
-  let issuer_id = 35;
-  let merchant_url = "https://telcellmoney.am/invoices";
-  let hk = process.env.TELCELL_PASSWORD + process.env.TELCELL_ID + issuer_id;
-  let hash = CryptoJS.MD5(hk).toString();
-  let q =
-    merchant_url +
-    "?check_bill:issuer=" +
-    encodeURIComponent(process.env.TELCELL_ID) +
-    "&invoice=" +
-    orderKey +
-    "&issuer_id=" +
-    issuer_id +
-    "&checksum=" +
-    hash;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
 
-  let data = await fetch(q, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+  const TellcelPayments = await SubscribtionPayment.findAll({
+    where: {
+      paymentWay: "Tellcel",
+      created_at: {
+        [Op.gte]: today,
+      },
     },
   });
-  console.log(q);
-  return res.json(data);
-  let output = {};
-  // data.replace(/\n/g, '&').split('&').forEach(function(val) {
-  //     let parts = val.split('=');
-  //     output[parts[0]] = decodeURIComponent(parts[1]);
-  // });
+  Promise.all(
+    TellcelPayments.map(async (e) => {
+      let issuer_id = e.orderId;
+      let merchant_url = "https://telcellmoney.am/invoices";
+      let hk =
+        process.env.TELCELL_PASSWORD +
+        process.env.TELCELL_ID +
+        e.orderKey +
+        issuer_id;
+      let hash = md5(hk);
+      let q =
+        merchant_url +
+        "?check_bill:issuer=" +
+        encodeURIComponent(process.env.TELCELL_ID) +
+        "&invoice=" +
+        payment.orderKey +
+        "&issuer_id=" +
+        issuer_id +
+        "&checksum=" +
+        hash;
+      let data;
+      await axios
+        .get(q)
+        .then((response) => {
+          data = response.data;
+        })
+        .catch((error) => {
+          data = {
+            error: true,
+            errorData: error,
+          };
+        });
 
-  // payment.telcellStatus = output.status;
-  return res.json(data);
+      let output = {};
+      data
+        .replace(/\n/g, "&")
+        .split("&")
+        .forEach(function (val) {
+          let parts = val.split("=");
+          output[parts[0]] = decodeURIComponent(parts[1]);
+        });
 
-  if (output.status === "PAID") {
-    payment.status = true;
-    payment.paid = true;
-    await this.paymentConfirmedMessage(payment);
-  } else if (output.status === "EXPIRED" || output.status === "REJECTED") {
-    payment.status = true;
-  }
-  await payment.save();
+      if (output.status === "PAID") {
+        let currentDate = new Date();
+        currentDate.setFullYear(currentDate.getFullYear() + 1);
+        currentDate = currentDate.toISOString();
+        e.endDate = currentDate;
+        e.save();
+      }
+    })
+  );
 };
-
 module.exports = {
   GetStatons,
   GetServicesForPay,

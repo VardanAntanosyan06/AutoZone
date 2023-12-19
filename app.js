@@ -18,6 +18,8 @@ var carsRouter = require("./routes/cars");
 var notificationRouter = require("./routes/notification");
 var TechPaymentRouter = require("./routes/TechPay");
 const getAlllocationsRouter = require("./routes/getAlllocations");
+const {checkTelcellPayments} = require("./controllers/TechPayController");
+
 const {
   sendInspectionMessage,
   sendPaymentMessage,
@@ -69,9 +71,13 @@ app.use(function (err, req, res, next) {
 
 const cronSchedule = "0 0 0 */10 * *";
 const cronThirtyMinutes = "*/10 * * * *";
+const cronMinutes = "* * * * *";
 
 cron.schedule(cronSchedule, () => {
   sendInspectionMessage();
+});
+cron.schedule(cronMinutes, () => {
+  checkTelcellPayments()
 });
 
 cron.schedule(cronThirtyMinutes, () => {
