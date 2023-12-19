@@ -366,22 +366,25 @@ const TellcelPayment = async (req, res) => {
           valid_days +
           "&checksum=" +
           hash;
-        let data;
-
-        try {
-          const response = await fetch(q);
-          if (response.ok) {
-            data = await response.json();
-          } else {
-            data = null;;
+          let data;
+          try {
+              const response = await fetch(q);
+              if (!response.ok) {
+                  throw new Error("Վճարման խափանում");
+              }
+              
+              data = await response.json();
+          } catch (error) {
+              data = {
+                  error: true,
+                  statusCode: 500,
+                  message: "Վճարման խափանում",
+                  errors: error.message
+              };
           }
-        } catch (error) {
-          data = null;
-        }
-        const payment = await SubscribtionPayment.findOne({where:{id}}) 
-        payment.orderKey = data;
-        payment.save();
-
+          const payment = await SubscribtionPayment.findOne({where:{id}}) 
+          payment.orderKey = data;
+          payment.save();
         return res.json({ success: true });
       }
       return res.status(401).json({ message: "User not found" });
