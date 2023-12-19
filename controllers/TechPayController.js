@@ -518,7 +518,7 @@ const ConfirmIdram = async (request,res)=> {
                   // Get the current date
                   let currentDate = new Date();
                   currentDate.setFullYear(currentDate.getFullYear() + 1);
-                  currentDate.toISOString()
+                  currentDate = currentDate.toISOString()
                   let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
                   UserSubscribtionPayment.endDate = currentDate;
                   UserSubscribtionPayment.save()
