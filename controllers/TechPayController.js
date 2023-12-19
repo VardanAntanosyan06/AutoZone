@@ -564,7 +564,7 @@ const checkTelcellPayments = async (req, res) => {
         "?check_bill:issuer=" +
         encodeURIComponent(process.env.TELCELL_ID) +
         "&invoice=" +
-        payment.orderKey +
+        e.orderKey +
         "&issuer_id=" +
         issuer_id +
         "&checksum=" +
