@@ -498,7 +498,7 @@ const ConfirmIdram = async (request,res)=> {
 
       if (
           request.EDP_CHECKSUM.toUpperCase() !==
-          CryptoJS.MD5(txtToHash).toUpperCase()
+          CryptoJS.MD5(txtToHash).toString().toUpperCase()
       ) {
           return res.send('Error');
       } else {
