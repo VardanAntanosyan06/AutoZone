@@ -380,10 +380,6 @@ const TellcelPayment = async (req, res) => {
         } catch (error) {
           console.log(error);
         }
-        console.log(
-          data,
-          "********************************///////////////////////////////////"
-        );
         let pay = await SubscribtionPayment.findOne({ where: { id } });
         pay.orderKey = data;
         pay.save();
@@ -547,7 +543,7 @@ const checkTelcellPayments = async (req, res) => {
   const TellcelPayments = await SubscribtionPayment.findAll({
     where: {
       paymentWay: "Tellcel",
-      created_at: {
+      createdAt: {
         [Op.gte]: today,
       },
     },
@@ -555,7 +551,7 @@ const checkTelcellPayments = async (req, res) => {
   
   Promise.all(
     TellcelPayments.map(async (e) => {
-      let issuer_id = e.orderId;
+      let issuer_id = e.id;
       let merchant_url = "https://telcellmoney.am/invoices";
       let hk =
         process.env.TELCELL_PASSWORD +
