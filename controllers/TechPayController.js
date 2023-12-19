@@ -558,7 +558,7 @@ const checkTelcellPayments = async (req, res) => {
         process.env.TELCELL_ID +
         e.orderKey +
         issuer_id;
-      let hash = md5(hk);
+      let hash = CryptoJS.MD5(hk);
       let q =
         merchant_url +
         "?check_bill:issuer=" +
