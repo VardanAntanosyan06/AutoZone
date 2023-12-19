@@ -145,7 +145,7 @@ const Verification = async (req, res) => {
 
 const CreateOrUpdatePin = async (req, res) => {
   try {
-    const { pin } = req.body;
+    const { pin }  = req.body;
     let { authorization: token } = req.headers;
 
     if (token) {
@@ -350,13 +350,12 @@ const GetUserData = async (req, res) => {
         where: { token },
         include:[{model:SubscribtionPayment,attributes:['id','endDate']}]
       });
+      if (User) {
       const Car = await Cars.findAll({
         where: { userId: User.id },
         order: [["id", "DESC"]],
       });
 
-      if (User) {
-        // User['Cars'] = Car
         User.setDataValue("Cars", Car);
         if(User.SubscribtionPayments.length===0 || (User.SubscribtionPayments.length >0 && new Date(User.SubscribtionPayments[0].endDate)<new Date() )){
           User.setDataValue("isAcive", false);        
@@ -592,7 +591,6 @@ const DeleteUser = async (req, res) => {
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
-
 
 module.exports = {
   LoginOrRegister,
