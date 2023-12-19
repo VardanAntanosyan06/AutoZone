@@ -404,13 +404,13 @@ const IdramPayment = async (req, res) => {
             userId: User.id,
           },
         });
-        const {id} = await SubscribtionPayment.create({
+        const { id } = await SubscribtionPayment.create({
           userId: User.id,
           endDate: new Date(),
           paymentWay: "Idram",
         });
 
-        return res.json({ success: true,id });
+        return res.json({ success: true, id });
       }
       return res.status(401).json({ message: "User not found" });
     }
@@ -427,12 +427,14 @@ const IdramPayment = async (req, res) => {
 
 const SucccessURL = async (req, res) => {
   try {
-    const {url}  = req.body;
+    const { url } = req.body;
 
-    if(url){
-      return res.status(200).json(url)
+    if (url) {
+      return res.status(200).json(url);
     }
-    return res.status(403).json({success:false,message:"URL cannot be empty"})
+    return res
+      .status(403)
+      .json({ success: false, message: "URL cannot be empty" });
   } catch (error) {
     console.log(error);
     return res
@@ -443,12 +445,14 @@ const SucccessURL = async (req, res) => {
 
 const FailURL = async (req, res) => {
   try {
-    const {url}  = req.body;
+    const { url } = req.body;
 
-    if(url){
-      return res.status(200).json(url)
+    if (url) {
+      return res.status(200).json(url);
     }
-    return res.status(403).json({success:false,message:"URL cannot be empty"})
+    return res
+      .status(403)
+      .json({ success: false, message: "URL cannot be empty" });
   } catch (error) {
     console.log(error);
     return res
@@ -457,66 +461,72 @@ const FailURL = async (req, res) => {
   }
 };
 
-const ConfirmIdram = async (request,res)=> {
+const ConfirmIdram = async (request, res) => {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
   request = request.body;
-  console.log(request.EDP_PRECHECK,request.EDP_BILL_NO,request.EDP_REC_ACCOUNT,request.EDP_AMOUNT,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
-  // console.log(request.receiverName,request.receiverId,request.title,request.amount,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
+ 
+  if (
+    typeof request.EDP_PRECHECK !== "undefined" &&
+    typeof request.EDP_BILL_NO !== "undefined" &&
+    typeof request.EDP_REC_ACCOUNT !== "undefined" &&
+    typeof request.EDP_AMOUNT !== "undefined"
+  ) {
+    if (request.EDP_PRECHECK === "YES") {
+      console.log("second if");
+      if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
+        const bill_no = request.EDP_BILL_NO;
+        return res.send("OK");
+      }
+    }
+  }
 
   if (
-      typeof request.EDP_PRECHECK !== 'undefined' &&
-      typeof request.EDP_BILL_NO !== 'undefined' &&
-      typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
-      typeof request.EDP_AMOUNT !== 'undefined'
+    typeof request.EDP_PAYER_ACCOUNT !== "undefined" &&
+    typeof request.EDP_BILL_NO !== "undefined" &&
+    typeof request.EDP_REC_ACCOUNT !== "undefined" &&
+    typeof request.EDP_AMOUNT !== "undefined" &&
+    typeof request.EDP_TRANS_ID !== "undefined" &&
+    typeof request.EDP_CHECKSUM !== "undefined"
   ) {
-      if (request.EDP_PRECHECK === 'YES') {
-        console.log("second if");
-          if (request.EDP_REC_ACCOUNT === EDP_REC_ACCOUNT) {
-              const bill_no = request.EDP_BILL_NO;
-              return res.send('OK');
-          }
-      }
-  }
-  
-  if (  
-      typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
-      typeof request.EDP_BILL_NO !== 'undefined' &&
-      typeof request.EDP_REC_ACCOUNT !== 'undefined' &&
-      typeof request.EDP_AMOUNT !== 'undefined' &&
-      typeof request.EDP_TRANS_ID !== 'undefined' &&
-      typeof request.EDP_CHECKSUM !== 'undefined'
-  ) {
-        const txtToHash =
-          EDP_REC_ACCOUNT + ':' +
-          request.EDP_AMOUNT + ':' +
-          SECRET_KEY + ':' +
-          request.EDP_BILL_NO + ':' +
-          request.EDP_PAYER_ACCOUNT + ':' +
-          request.EDP_TRANS_ID + ':' +
-          request.EDP_TRANS_DATE;
+    const txtToHash =
+      EDP_REC_ACCOUNT +
+      ":" +
+      request.EDP_AMOUNT +
+      ":" +
+      SECRET_KEY +
+      ":" +
+      request.EDP_BILL_NO +
+      ":" +
+      request.EDP_PAYER_ACCOUNT +
+      ":" +
+      request.EDP_TRANS_ID +
+      ":" +
+      request.EDP_TRANS_DATE;
 
-      if (
-          request.EDP_CHECKSUM.toUpperCase() !==
-          CryptoJS.MD5(txtToHash).toString().toUpperCase()
-      ) {
-          return res.send('Error');
-      } else {
-          const amount = request.EDP_AMOUNT;
-          if (amount > 0) {
-                  let currentDate = new Date();
-                  currentDate.setFullYear(currentDate.getFullYear() + 1);
-                  currentDate = currentDate.toISOString()
-                  let UserSubscribtionPayment = await SubscribtionPayment.findOne({where:{id:request.EDP_BILL_NO}})
-                  UserSubscribtionPayment.endDate = currentDate;
-                  UserSubscribtionPayment.save()
-                  return res.send('OK');
-              // }
-          }
+    if (
+      request.EDP_CHECKSUM.toUpperCase() !==
+      CryptoJS.MD5(txtToHash).toString().toUpperCase()
+    ) {
+      return res.send("Error");
+    } else {
+      const amount = request.EDP_AMOUNT;
+      if (amount > 0) {
+        let currentDate = new Date();
+        currentDate.setFullYear(currentDate.getFullYear() + 1);
+        currentDate = currentDate.toISOString();
+        let UserSubscribtionPayment = await SubscribtionPayment.findOne({
+          where: { id: request.EDP_BILL_NO },
+        });
+        UserSubscribtionPayment.endDate = currentDate;
+        UserSubscribtionPayment.save();
+        return res.send("OK");
+        // }
       }
+    }
   }
-  return res.send('OK');
-}
+  return res.send("OK");
+};
 
 module.exports = {
   GetStatons,
@@ -528,5 +538,5 @@ module.exports = {
   SucccessURL,
   FailURL,
   ConfirmIdram,
-  IdramPayment
+  IdramPayment,
 };
