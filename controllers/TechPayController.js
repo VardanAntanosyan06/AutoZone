@@ -5,6 +5,7 @@ const { Users } = require("../models");
 const { SubscribtionPayment } = require("../models");
 const { createClient, setex } = require("redis");
 var CryptoJS = require("crypto-js");
+const { where } = require("sequelize");
 
 const GetStatons = async (req, res) => {
   try {
@@ -385,7 +386,11 @@ try {
     };
 }
         console.log(data);
+        let pay = await SubscribtionPayment.findOne({where:{id}})
+        pay.orderKey = data;
+        pay.save()
         return res.json({ success: true, data });
+        
       }
       return res.status(401).json({ message: "User not found" });
     }
