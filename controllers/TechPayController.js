@@ -5,7 +5,7 @@ const { Users } = require("../models");
 const { SubscribtionPayment } = require("../models");
 const { createClient, setex } = require("redis");
 var CryptoJS = require("crypto-js");
-const { where } = require("sequelize");
+const { Op } = require("sequelize");
 
 const GetStatons = async (req, res) => {
   try {
