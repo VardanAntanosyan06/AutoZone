@@ -548,7 +548,7 @@ const checkTelcellPayments = async (req, res) => {
       },
     },
   });
-  
+
   Promise.all(
     TellcelPayments.map(async (e) => {
       let issuer_id = e.id;
@@ -569,60 +569,33 @@ const checkTelcellPayments = async (req, res) => {
         issuer_id +
         "&checksum=" +
         hash;
-        console.log(q);
-        try {
-        let data;
-         const response = await fetch(q);
-         
-         if (!response.ok) {
-             throw new Error(`Վճարման խափանում: ${response.status}`);
-         }
-     
-         data = await response.json();
-     } catch (error) {
-         data = {
-             error: true,
-             statusCode: 500,
-             message: "Վճարման խափանում",
-             errors: error.message
-         };
-     }
-   let output = {};
-   data
-     .replace(/\n/g, "&")
-     .split("&")
-     .forEach(function (val) {
-       let parts = val.split("=");
-       output[parts[0]] = decodeURIComponent(parts[1]);
-     });
+      console.log(q);
 
-let data;
+      try {
+        const response = await fetch(q);
 
-try {
- const response = await fetch(q);
+        if (!response.ok) {
+          throw new Error(`Վճարման խափանում: ${response.status}`);
+        }
 
- if (!response.ok) {
-     throw new Error(`Վճարման խափանում: ${response.status}`);
- }
+        const responseBody = await response.text(); // Use text() instead of json() if the response is not JSON
 
- const responseBody = await response.text(); // Use text() instead of json() if the response is not JSON
-
- data = {};
- responseBody
-     .replace(/\n/g, "&")
-     .split("&")
-     .forEach(function (val) {
-         let parts = val.split("=");
-         data[parts[0]] = decodeURIComponent(parts[1]);
-     });
-} catch (error) {
- data = {
-     error: true,
-     statusCode: 500,
-     message: "Վճարման խափանում",
-     errors: error.message
- };
-}
+        data = {};
+        responseBody
+          .replace(/\n/g, "&")
+          .split("&")
+          .forEach(function (val) {
+            let parts = val.split("=");
+            data[parts[0]] = decodeURIComponent(parts[1]);
+          });
+      } catch (error) {
+        data = {
+          error: true,
+          statusCode: 500,
+          message: "Վճարման խափանում",
+          errors: error.message,
+        };
+      }
 
       if (output.status === "PAID") {
         let currentDate = new Date();
