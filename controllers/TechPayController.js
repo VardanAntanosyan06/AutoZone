@@ -460,8 +460,9 @@ const FailURL = async (req, res) => {
 const ConfirmIdram = async (request,res)=> {
   const SECRET_KEY = process.env.IDRAM_PASSWORD;
   const EDP_REC_ACCOUNT = process.env.IDRAM_ID;
+  request = request.body;
   console.log(request.EDP_PRECHECK,request.EDP_BILL_NO,request.EDP_REC_ACCOUNT,request.EDP_AMOUNT,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
-  console.log(request.receiverName,request.receiverId,request.title,request.amount,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
+  // console.log(request.receiverName,request.receiverId,request.title,request.amount,request.EDP_TRANS_ID,request.EDP_CHECKSUM,request.EDP_TRANS_DATE);
 
   if (
       typeof request.EDP_PRECHECK !== 'undefined' &&
@@ -477,6 +478,7 @@ const ConfirmIdram = async (request,res)=> {
           }
       }
   }
+  
   if (  
       typeof request.EDP_PAYER_ACCOUNT !== 'undefined' &&
       typeof request.EDP_BILL_NO !== 'undefined' &&
