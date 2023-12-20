@@ -355,7 +355,6 @@ const GetUserData = async (req, res) => {
         where: { userId: User.id },
         order: [["id", "DESC"]],
       });
-
         User.setDataValue("Cars", Car);
         if(User.SubscribtionPayments.length===0 || (User.SubscribtionPayments.length >0 && new Date(User.SubscribtionPayments[0].endDate)<new Date() )){
           User.setDataValue("isAcive", false);        

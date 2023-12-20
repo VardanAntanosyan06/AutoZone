@@ -9,4 +9,5 @@ router.post("/getAllUserData",checkisAdmin(),MenuController.GetAllUserData)
 router.post("/getAllCarData",checkisAdmin(),MenuController.getAllCarData)
 router.post("/getAllComplaintsData",checkisAdmin(),MenuController.getAllComplaintsData)
 router.get("/getAllPaymentData",checkisAdmin(),MenuController.getAllPaymentData)
+router.post("/getAllSubscribtionData",checkisAdmin(),MenuController.getAllSubscribtionData)
 module.exports = router;
