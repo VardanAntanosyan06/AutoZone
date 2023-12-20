@@ -240,6 +240,7 @@ const getAllSubscribtionData = async (req, res) => {
             { id: filter },
             { phoneNumber: { [Op.like]: `%${filter}` } },
           ],
+
         },
         order: [["id", "DESC"]],
       });

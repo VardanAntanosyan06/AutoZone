@@ -353,7 +353,7 @@ const GetUserData = async (req, res) => {
       if (User) {
       const Car = await Cars.findAll({
         where: { userId: User.id },
-        order: [["id", "DESC"]],
+        order: [["id", "ASC"]],
       });
         User.setDataValue("Cars", Car);
         if(User.SubscribtionPayments.length===0 || (User.SubscribtionPayments.length >0 && new Date(User.SubscribtionPayments[0].endDate)<new Date() )){
