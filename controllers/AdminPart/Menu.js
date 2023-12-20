@@ -245,7 +245,7 @@ const getAllSubscribtionData = async (req, res) => {
             { id: filter },
             { phoneNumber: { [Op.like]: `%${filter}` } },
           ],
-          where: { "$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null } },
+          "$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null } 
         },
       });
 
@@ -268,6 +268,7 @@ const getAllSubscribtionData = async (req, res) => {
           },
         },
         order: [["id", "DESC"]],
+        where: { "$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null } },
       });
 
       return res.status(200).json({ success: true, PaymentInfo });
