@@ -1,4 +1,9 @@
-const { Users, Cars, Complaints,SubscribtionPayment } = require("../../models");
+const {
+  Users,
+  Cars,
+  Complaints,
+  SubscribtionPayment,
+} = require("../../models");
 const { Op } = require("sequelize");
 const Sequelize = require("sequelize");
 const mysql = require("mysql2");
@@ -234,33 +239,31 @@ const getAllSubscribtionData = async (req, res) => {
     if (filter) {
       const PaymentInfo = await Users.findAll({
         attributes: ["id", "phoneNumber"],
-        include:[SubscribtionPayment],
+        include: { model: SubscribtionPayment, order: [["id", "DESC"]] },
         where: {
           [Op.or]: [
             { id: filter },
             { phoneNumber: { [Op.like]: `%${filter}` } },
           ],
-
+          where: { "$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null } },
         },
-        order: [["id", "DESC"]],
       });
 
       return res.status(200).json({ success: true, PaymentInfo });
-      
     }
     if (date) {
       const fixedDate = new Date(date);
       const PaymentInfo = await Users.findAll({
-        attributes:['id','phoneNumber'],
-        order: [["id", "DESC"]],
-        include:{
-          model:SubscribtionPayment,
+        attributes: ["id", "phoneNumber"],
+        include: {
+          model: SubscribtionPayment,
+          order: [["id", "DESC"]],
           where: {
             createdAt: {
               [Op.between]: [
                 fixedDate,
                 new Date(fixedDate.getTime() + 24 * 60 * 60 * 1000),
-              ], 
+              ],
             },
           },
         },
@@ -270,10 +273,9 @@ const getAllSubscribtionData = async (req, res) => {
       return res.status(200).json({ success: true, PaymentInfo });
     }
     const PaymentInfo = await Users.findAll({
-      attributes:['id','phoneNumber'],
-      include:[SubscribtionPayment],
-      order: [["id", "DESC"]],
-      where:{"$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null }}
+      attributes: ["id", "phoneNumber"],
+      include: { model: SubscribtionPayment, order: [["id", "DESC"]] },
+      where: { "$SubscribtionPayments.id$": { [Sequelize.Op.ne]: null } },
     });
 
     return res.status(200).json({ success: true, PaymentInfo });
@@ -290,5 +292,5 @@ module.exports = {
   getAllCarData,
   getAllComplaintsData,
   getAllPaymentData,
-  getAllSubscribtionData
+  getAllSubscribtionData,
 };
