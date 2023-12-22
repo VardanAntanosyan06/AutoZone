@@ -293,5 +293,5 @@ module.exports = {
   getAllCarData,
   getAllComplaintsData,
   getAllPaymentData,
-  getAllSubscribtionData,
+  getAllSubscribtionData,   
 };

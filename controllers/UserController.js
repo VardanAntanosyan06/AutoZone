@@ -591,6 +591,65 @@ const DeleteUser = async (req, res) => {
   }
 };
 
+const GetDEBTInfo  = async (req, res) => {
+  try {
+    let { techNumber, phoneNumber } = req.body;
+
+    const User = await Users.findOne({ where: { phoneNumber } });
+
+    if (!User)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    const client = await createClient()
+      .on("error", (err) => console.log("Redis Client Error", err))
+      .connect();
+
+    let carInfo = await client.get(techNumber);
+    if (carInfo) {
+      carInfo = JSON.parse(carInfo);
+      if (!Array.isArray(carInfo.vehicle_types)) {
+        carInfo.vehicle_types = Object.values(carInfo.vehicle_types);
+      }
+
+      // console.log();
+      return res.status(200).json({ success: true,debt:carInfo.debt });
+    }
+
+    phoneNumber = phoneNumber.replace(/374/g, "0");
+
+    const carDataResponse = await fetch(
+      "https://api.onepay.am/autoclub/payment-service/select-vehicle",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization:
+            "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+        },
+        body: JSON.stringify({
+          userID: User.id,
+          phone: phoneNumber,
+          documentNumber: techNumber,
+        }),
+      }
+    );
+
+    if (!carDataResponse.ok) {
+      return res.status(500).json({ error: "Failed to fetch car data" });
+    }
+    let carData = await carDataResponse.json();
+    if (!Array.isArray(carData.vehicle_types)) {
+      carData.vehicle_types = Object.values(carData.vehicle_types);
+    }
+    return res.status(200).json({ success: true,debt:carData.debt });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Something went wrong." });
+  }
+};
 module.exports = {
   LoginOrRegister,
   Verification,
@@ -604,5 +663,6 @@ module.exports = {
   UpdateUserImage,
   sendComplaint,
   GetDAHKInfo,
-  DeleteUser
+  DeleteUser,
+  GetDEBTInfo
 };
