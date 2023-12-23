@@ -161,7 +161,7 @@ const sendPaymentMessage = async () => {
     });
 
     connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      "SELECT * FROM `orders` WHERE `is_autoclub` = 1 AND `status` = 1;",
       async function (err, results) {
         if (err) {
           console.log(err);
@@ -206,122 +206,131 @@ const sendPaymentMessage = async () => {
     if (requests.length > 0) {
       await Promise.all(
         requests.map(async (request) => {
-          request.PaymentStatusOnes.map(async (e) => {
-            let payInfo = await fetch(
-              `https://api.onepay.am/autoclub/payment-service/order/${e.requestId}`,
-              {
-                method: "POST",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                  Authorization:
-                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-                },
-                body: JSON.stringify({
-                  userID: request.id,
-                }),
-              }
-            );
-            if (!payInfo.ok) {
-              return { error: "Failed to fetch pay info" };
-            }
-            payInfo = await payInfo.json();
-
-            let partnerInfo = await fetch(
-              `https://api.onepay.am/autoclub/partners`,
-              {
-                method: "GET",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                  Authorization:
-                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-                },
-              }
-            );
-            if (!partnerInfo.ok) {
-              return { error: "Failed to fetch pay info" };
-            }
-            partnerInfo = await partnerInfo.json();
-
-            partnerInfo = partnerInfo.filter(
-              (partner) => partner.id == e.station
-            );
-            const date = new Date().toISOString();
-            if (payInfo.status == 3 && request.deviceToken) {
-              var message = {
-                notification: {
-                  title: "Վճարումը մերժված է",
-                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
-                },
-                token: request.deviceToken
-              };
-              await admin.messaging().send(message);
-
-              await PaymentStatusOne.destroy({
-                where: { requestId: e.requestId },
-              });
-              const userData = {
-                title: "Վճարումը մերժված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
-                date,
-                userId: request.id,
-                active: false,
-              };
-
-                // Reference to the location where you want to add the data
-              const userRef = rootRef
-                .child("payment_messages")
-                .child("payment" + v4());
-
-              // Push data to the specified location
-              userRef.set(userData, (error) => {
-                if (error) {
-                  console.error("Data could not be saved.", error);
-                } else {
-                  console.log("Data saved successfully.");
+          await Promise.all(
+            request.PaymentStatusOnes.map(async (e) => {
+              let payInfo = await fetch(
+                `https://api.onepay.am/autoclub/payment-service/order/${e.requestId}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    Authorization:
+                      "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+                  },
+                  body: JSON.stringify({
+                    userID: request.id,
+                  }),
                 }
-                admin.app().delete();
-              });
-            } else if (payInfo.status === 2 && request.deviceToken) {
-              var message = {
-                notification: {
+              );
+
+              if (!payInfo.ok) {
+                return { error: "Failed to fetch pay info" };
+              }
+
+              payInfo = await payInfo.json();
+
+              let partnerInfo = await fetch(
+                `https://api.onepay.am/autoclub/partners`,
+                {
+                  method: "GET",
+                  headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    Authorization:
+                      "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
+                  },
+                }
+              );
+
+              if (!partnerInfo.ok) {
+                return { error: "Failed to fetch pay info" };
+              }
+
+              partnerInfo = await partnerInfo.json();
+              partnerInfo = partnerInfo.filter(
+                (partner) => partner.id == e.station
+              );
+
+              const date = new Date().toISOString();
+
+              if (payInfo.status === 3 && request.deviceToken) {
+                var message = {
+                  notification: {
+                    title: "Վճարումը մերժված է",
+                    body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
+                  },
+                  token: request.deviceToken,
+                };
+
+                await admin.messaging().send(message);
+
+                await PaymentStatusOne.destroy({
+                  where: { requestId: e.requestId },
+                });
+
+                const userData = {
+                  title: "Վճարումը մերժված է",
+                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
+                  date,
+                  userId: request.id,
+                  active: false,
+                };
+
+                const userRef = rootRef
+                  .child("payment_messages")
+                  .child("payment" + v4());
+
+                userRef.set(userData, (error) => {
+                  if (error) {
+                    console.error("Data could not be saved.", error);
+                  } else {
+                    console.log("Data saved successfully.");
+                  }
+                  admin.app().delete();
+                });
+              } else if (payInfo.status === 2 && request.deviceToken) {
+                var message = {
+                  notification: {
+                    title: "Վճարումն հաստատված է",
+                    body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
+                  },
+                  token: request.deviceToken,
+                };
+
+                await admin.messaging().send(message);
+
+                await PaymentStatusOne.destroy({
+                  where: { id: e.id },
+                });
+
+                const userData = {
                   title: "Վճարումն հաստատված է",
                   body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                },
-                token: request.deviceToken,
-              };
-              await admin.messaging().send(message);
-              await PaymentStatusOne.destroy({
-                where: { id: e.id },
-              });
-              const userData = {
-                title: "Վճարումն հաստատված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                latitude: partnerInfo[0].latitude,
-                longitude: partnerInfo[0].longitude,
-                name: partnerInfo[0].translations.hy.name,
-                address: partnerInfo[0].translations.hy.address,
-                date,
-                userId: request.id,
-                active: false,
-              };
+                  latitude: partnerInfo[0].latitude,
+                  longitude: partnerInfo[0].longitude,
+                  name: partnerInfo[0].translations.hy.name,
+                  address: partnerInfo[0].translations.hy.address,
+                  date,
+                  userId: request.id,
+                  active: false,
+                };
 
-              const userRef = rootRef
-                .child("payment_messages")
-                .child("payment" + v4());
+                const userRef = rootRef
+                  .child("payment_messages")
+                  .child("payment" + v4());
 
-              // Push data to the specified location
-              userRef.set(userData, (error) => {
-                if (error) {
-                  console.error("Data could not be saved.", error);
-                } else {
-                  console.log("Data saved successfully.");
-                }
-                admin.app().delete();
-              });
-            }
-          });
+                userRef.set(userData, (error) => {
+                  if (error) {
+                    console.error("Data could not be saved.", error);
+                  } else {
+                    console.log("Data saved successfully.");
+                  }
+                  admin.app().delete();
+                });
+              }
+            })
+          );
         })
       );
     }
