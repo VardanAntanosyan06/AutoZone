@@ -143,7 +143,7 @@ const sendInspectionMessage = async () => {
   }
 };
 
-const sendPaymentMessage = async (req, res) => {
+const sendPaymentMessage = async () => {
   try {
     if (!admin.apps.length) {
       admin.initializeApp({
@@ -172,18 +172,20 @@ const sendPaymentMessage = async (req, res) => {
           await Promise.all(
             results.map(async (e) => {
               let phone = e.phone.replace("0", "374");
-              const isRequest = await PaymentStatusOne.findOne({where:{
-                phoneNumber: phone,
-                requestId: +e.id,
-                station: +e.partner_id
-              }})
-              if(!isRequest){
+              const isRequest = await PaymentStatusOne.findOne({
+                where: {
+                  phoneNumber: phone,
+                  requestId: +e.id,
+                  station: +e.partner_id,
+                },
+              });
+              if (!isRequest) {
                 await PaymentStatusOne.create({
                   phoneNumber: phone,
                   requestId: +e.id,
                   station: +e.partner_id,
                 });
-              } 
+              }
             })
           );
           return { success: true };
@@ -201,6 +203,7 @@ const sendPaymentMessage = async (req, res) => {
         "$PaymentStatusOnes.id$": { [Sequelize.Op.ne]: null },
       },
     });
+
     if (requests.length > 0) {
       await Promise.all(
         requests.map(async (request) => {
@@ -245,7 +248,7 @@ const sendPaymentMessage = async (req, res) => {
             partnerInfo = partnerInfo.filter(
               (partner) => partner.id == e.station
             );
-            const date = new Date().toISOString()
+            const date = new Date().toISOString();
             if (payInfo.status == 3) {
               var message = {
                 notification: {
@@ -300,8 +303,8 @@ const sendPaymentMessage = async (req, res) => {
                 longitude: partnerInfo[0].location.longitude,
                 latitude: partnerInfo[0].location.latitude,
                 longitude: partnerInfo[0].location.longitude,
-                name:partnerInfo[0].translations.hy.name,
-                address:partnerInfo[0].translations.hy.address,
+                name: partnerInfo[0].translations.hy.name,
+                address: partnerInfo[0].translations.hy.address,
                 date,
                 userId: request.id,
                 active: false,
@@ -309,8 +312,8 @@ const sendPaymentMessage = async (req, res) => {
 
               // Reference to the location where you want to add the data
               const userRef = rootRef
-              .child("payment_messages")
-              .child("payment" + v4());
+                .child("payment_messages")
+                .child("payment" + v4());
 
               // Push data to the specified location
               userRef.set(userData, (error) => {
@@ -331,7 +334,6 @@ const sendPaymentMessage = async (req, res) => {
   }
 };
 
-// const updateAllDataCron
 module.exports = {
   sendSMSCode,
   calculateDistance,
