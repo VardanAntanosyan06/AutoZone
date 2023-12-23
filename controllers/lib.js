@@ -298,10 +298,8 @@ const sendPaymentMessage = async () => {
               const userData = {
                 title: "Վճարումն հաստատված է",
                 body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                latitude: partnerInfo[0].location.latitude,
-                longitude: partnerInfo[0].location.longitude,
-                latitude: partnerInfo[0].location.latitude,
-                longitude: partnerInfo[0].location.longitude,
+                latitude: partnerInfo[0].latitude,
+                longitude: partnerInfo[0].longitude,
                 name: partnerInfo[0].translations.hy.name,
                 address: partnerInfo[0].translations.hy.address,
                 date,
@@ -309,7 +307,6 @@ const sendPaymentMessage = async () => {
                 active: false,
               };
 
-              // Reference to the location where you want to add the data
               const userRef = rootRef
                 .child("payment_messages")
                 .child("payment" + v4());
