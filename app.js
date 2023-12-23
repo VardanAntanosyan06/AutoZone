@@ -70,7 +70,7 @@ app.use(function (err, req, res, next) {
 });
 
 const cronSchedule = "0 0 0 */10 * *";
-const cronThirtyMinutes = "*/10 * * * *";
+const cronTwoMinutes = "*/2 * * * *";
 const cronMinutes = "* * * * *";
 
 cron.schedule(cronSchedule, () => {
@@ -80,7 +80,7 @@ cron.schedule(cronMinutes, () => {
   checkTelcellPayments()
 });
 
-cron.schedule(cronThirtyMinutes, () => {
+cron.schedule(cronTwoMinutes, () => {
   sendPaymentMessage();
 });
 module.exports = app;
