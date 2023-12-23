@@ -134,7 +134,6 @@ const sendInspectionMessage = async () => {
           },
           token: e.deviceToken,
         };
-        console.log(message);
         await admin.messaging().send(message);
       })
     );
@@ -249,15 +248,14 @@ const sendPaymentMessage = async () => {
               (partner) => partner.id == e.station
             );
             const date = new Date().toISOString();
-            if (payInfo.status == 3) {
+            if (payInfo.status == 3 && request.deviceToken) {
               var message = {
                 notification: {
                   title: "Վճարումը մերժված է",
                   body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
                 },
-                token: request.deviceToken,
+                token: request.deviceToken
               };
-              console.log(message);
               await admin.messaging().send(message);
 
               await PaymentStatusOne.destroy({
@@ -285,7 +283,7 @@ const sendPaymentMessage = async () => {
                 }
                 admin.app().delete();
               });
-            } else if (payInfo.status === 2) {
+            } else if (payInfo.status === 2 && request.deviceToken) {
               var message = {
                 notification: {
                   title: "Վճարումն հաստատված է",
@@ -293,7 +291,6 @@ const sendPaymentMessage = async () => {
                 },
                 token: request.deviceToken,
               };
-              console.log(message);
               await admin.messaging().send(message);
               await PaymentStatusOne.destroy({
                 where: { id: e.id },
