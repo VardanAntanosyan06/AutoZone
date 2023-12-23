@@ -134,7 +134,7 @@ const sendInspectionMessage = async () => {
           },
           token: e.deviceToken,
         };
-
+        console.log(message);
         await admin.messaging().send(message);
       })
     );
@@ -257,6 +257,7 @@ const sendPaymentMessage = async () => {
                 },
                 token: request.deviceToken,
               };
+              console.log(message);
               await admin.messaging().send(message);
 
               await PaymentStatusOne.destroy({
@@ -270,7 +271,7 @@ const sendPaymentMessage = async () => {
                 active: false,
               };
 
-              // Reference to the location where you want to add the data
+                // Reference to the location where you want to add the data
               const userRef = rootRef
                 .child("payment_messages")
                 .child("payment" + v4());
@@ -292,6 +293,7 @@ const sendPaymentMessage = async () => {
                 },
                 token: request.deviceToken,
               };
+              console.log(message);
               await admin.messaging().send(message);
               await PaymentStatusOne.destroy({
                 where: { id: e.id },
