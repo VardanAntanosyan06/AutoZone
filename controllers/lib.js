@@ -263,8 +263,13 @@ const sendPaymentMessage = async () => {
                   token: request.deviceToken,
                 };
 
-                await admin.messaging().send(message);
-
+                try {
+                  await admin.messaging().send(message);
+                } catch (error) {
+                  console.error("Error sending FCM message:", error);
+                  // Handle the error, log details, and possibly mark the token as invalid in your system.
+                }
+              
                 await PaymentStatusOne.destroy({
                   where: { requestId: e.requestId },
                 });
@@ -298,8 +303,13 @@ const sendPaymentMessage = async () => {
                   token: request.deviceToken,
                 };
 
-                await admin.messaging().send(message);
-
+                try {
+                  await admin.messaging().send(message);
+                } catch (error) {
+                  console.error("Error sending FCM message:", error);
+                  // Handle the error, log details, and possibly mark the token as invalid in your system.
+                }
+              
                 await PaymentStatusOne.destroy({
                   where: { id: e.id },
                 });
