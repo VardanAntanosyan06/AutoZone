@@ -151,6 +151,7 @@ const sendPaymentMessage = async (req, res) => {
         databaseURL: "https://autozone-5d681-default-rtdb.firebaseio.com/",
       });
     }
+
     const db = admin.database();
     const rootRef = db.ref();
 
@@ -162,174 +163,57 @@ const sendPaymentMessage = async (req, res) => {
     });
 
     connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` =1 AND `status`=1;",
+      "SELECT * FROM `orders` WHERE `is_autoclub` = 1 AND `status` = 1;",
       async function (err, results) {
-        if (err) {
-          console.log(err);
-          return { message: "Something went wrong." };
-        }
-        if (results.length > 0) {
-          await Promise.all(
-            results.map(async (e) => {
-              let phone = e.phone.replace("0", "374");
-              const isRequest = await PaymentStatusOne.findOne({where:{
-                phoneNumber: phone,
-                requestId: +e.id,
-                station: +e.partner_id
-              }})
-              if(!isRequest){
-                await PaymentStatusOne.create({
-                  phoneNumber: phone,
-                  requestId: +e.id,
-                  station: +e.partner_id,
+        try {
+          if (err) {
+            console.error(err);
+            throw new Error("Something went wrong.");
+          }
+
+          if (results.length > 0) {
+            await Promise.all(
+              results.map(async (e) => {
+                let phone = e.phone.replace("0", "374");
+                const isRequest = await PaymentStatusOne.findOne({
+                  where: {
+                    phoneNumber: phone,
+                    requestId: +e.id,
+                    station: +e.partner_id,
+                  },
                 });
-              } 
-            })
-          );
-          return { success: true };
+
+                if (!isRequest) {
+                  await PaymentStatusOne.create({
+                    phoneNumber: phone,
+                    requestId: +e.id,
+                    station: +e.partner_id,
+                  });
+                }
+              })
+            );
+            res.json({ success: true });
+          } else {
+            res.json({ message: "Request not found!" });
+          }
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ error: "Internal Server Error" });
         }
-        return { message: "Request not found!" };
       }
     );
 
-    const requests = await Users.findAll({
-      include: {
-        model: PaymentStatusOne,
-      },
-      attributes: ["id", "deviceToken"],
-      where: {
-        "$PaymentStatusOnes.id$": { [Sequelize.Op.ne]: null },
-      },
-    });
-    if (requests.length > 0) {
-      await Promise.all(
-        requests.map(async (request) => {
-          request.PaymentStatusOnes.map(async (e) => {
-            let payInfo = await fetch(
-              `https://api.onepay.am/autoclub/payment-service/order/${e.requestId}`,
-              {
-                method: "POST",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                  Authorization:
-                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-                },
-                body: JSON.stringify({
-                  userID: request.id,
-                }),
-              }
-            );
-            if (!payInfo.ok) {
-              return { error: "Failed to fetch pay info" };
-            }
-            payInfo = await payInfo.json();
+    // ... (rest of the code)
 
-            let partnerInfo = await fetch(
-              `https://api.onepay.am/autoclub/partners`,
-              {
-                method: "GET",
-                headers: {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                  Authorization:
-                    "XReWou2hVHAEXxwlq4BWlUeld?YKexVceIQaeMuAd46ahTDypeM0Gc58qYUhXyIG",
-                },
-              }
-            );
-            if (!partnerInfo.ok) {
-              return { error: "Failed to fetch pay info" };
-            }
-            partnerInfo = await partnerInfo.json();
-
-            partnerInfo = partnerInfo.filter(
-              (partner) => partner.id == e.station
-            );
-            const date = new Date().toISOString()
-            if (payInfo.status == 3) {
-              var message = {
-                notification: {
-                  title: "Վճարումը մերժված է",
-                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է։`,
-                },
-                token: request.deviceToken,
-              };
-              await admin.messaging().send(message);
-
-              await PaymentStatusOne.destroy({
-                where: { requestId: e.requestId },
-              });
-              const userData = {
-                title: "Վճարումը մերժված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը մերժվել է:`,
-                date,
-                userId: request.id,
-                active: false,
-              };
-
-              // Reference to the location where you want to add the data
-              const userRef = rootRef
-                .child("payment_messages")
-                .child("payment" + v4());
-
-              // Push data to the specified location
-              userRef.set(userData, (error) => {
-                if (error) {
-                  console.error("Data could not be saved.", error);
-                } else {
-                  console.log("Data saved successfully.");
-                }
-                admin.app().delete();
-              });
-            } else if (payInfo.status === 2) {
-              var message = {
-                notification: {
-                  title: "Վճարումն հաստատված է",
-                  body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                },
-                token: request.deviceToken,
-              };
-              await admin.messaging().send(message);
-              await PaymentStatusOne.destroy({
-                where: { id: e.id },
-              });
-              const userData = {
-                title: "Վճարումն հաստատված է",
-                body: `${payInfo.request.car_reg_no} մեքենայի տեխզննման վճարումը հաստատվել է։ Խնդրում ենք մոտենալ Ձեր կողմից նշված տեխզննման կայան:`,
-                latitude: partnerInfo[0].location.latitude,
-                longitude: partnerInfo[0].location.longitude,
-                latitude: partnerInfo[0].location.latitude,
-                longitude: partnerInfo[0].location.longitude,
-                name:partnerInfo[0].translations.hy.name,
-                address:partnerInfo[0].translations.hy.address,
-                date,
-                userId: request.id,
-                active: false,
-              };
-
-              // Reference to the location where you want to add the data
-              const userRef = rootRef
-              .child("payment_messages")
-              .child("payment" + v4());
-
-              // Push data to the specified location
-              userRef.set(userData, (error) => {
-                if (error) {
-                  console.error("Data could not be saved.", error);
-                } else {
-                  console.log("Data saved successfully.");
-                }
-                admin.app().delete();
-              });
-            }
-          });
-        })
-      );
-    }
   } catch (error) {
-    console.error("Error sending GET request:", error);
+    console.error("Error in sendPaymentMessage:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    // Close the MySQL connection when done
+    connection.end();
   }
 };
+
 
 // const updateAllDataCron
 module.exports = {
