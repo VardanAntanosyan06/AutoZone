@@ -80,7 +80,7 @@ cron.schedule(cronMinutes, () => {
   checkTelcellPayments()
 });
 
-cron.schedule(cronTenSeconds, () => {
-  sendPaymentMessage();
-});
+// cron.schedule(cronTenSeconds, () => {
+//   sendPaymentMessage();
+// });
 module.exports = app;
