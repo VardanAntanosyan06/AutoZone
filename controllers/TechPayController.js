@@ -294,14 +294,15 @@ const GetPaymentURLArca = async (req, res) => {
     paymentResponse = await paymentResponse.json();
     
     let phone = User.phoneNumber.replace("0", "374");
-    console.log(paymentResponse,phone,paymentResponse.order.id,station);
-    const isRequest = await PaymentStatusOne.findOne({
-      where: {
-        phoneNumber: phone,
-        requestId: paymentResponse.order.id,
-        station
-      },
-    });
+    if(paymentResponse){
+
+      const isRequest = await PaymentStatusOne.findOne({
+        where: {
+          phoneNumber: phone,
+          requestId: paymentResponse.order.id,
+          station
+        },
+      });
     if (!isRequest) {
       await PaymentStatusOne.create({
         phoneNumber: phone,
@@ -309,6 +310,7 @@ const GetPaymentURLArca = async (req, res) => {
         station
       });
     }
+  }
     return res.json(paymentResponse);
   } catch (error) {
     console.log(error); 
