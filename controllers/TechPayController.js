@@ -298,7 +298,7 @@ const GetPaymentURLArca = async (req, res) => {
     const isRequest = await PaymentStatusOne.findOne({
       where: {
         phoneNumber: phone,
-        requestId: paymentResponse.id,
+        requestId: paymentResponse.order.id,
         station
       },
     });
