@@ -159,40 +159,6 @@ const sendPaymentMessage = async () => {
       database: "onepay",
       password: process.env.MYSQL_PASSWORD,
     });
-
-    connection.query(
-      "SELECT * FROM `orders` WHERE `is_autoclub` = 1 AND `status` = 1;",
-      async function (err, results) {
-        if (err) {
-          console.log(err);
-          return { message: "Something went wrong." };
-        }
-        if (results.length > 0) {
-          await Promise.all(
-            results.map(async (e) => {
-              let phone = e.phone.replace("0", "374");
-              const isRequest = await PaymentStatusOne.findOne({
-                where: {
-                  phoneNumber: phone,
-                  requestId: +e.id,
-                  station: +e.partner_id,
-                },
-              });
-              if (!isRequest) {
-                await PaymentStatusOne.create({
-                  phoneNumber: phone,
-                  requestId: +e.id,
-                  station: +e.partner_id,
-                });
-              }
-            })
-          );
-          return { success: true };
-        }
-        return { message: "Request not found!" };
-      }
-    );
-
     const requests = await Users.findAll({
       include: {
         model: PaymentStatusOne,
@@ -344,6 +310,14 @@ const sendPaymentMessage = async () => {
         })
       );
     }
+    connection.end((err) => {
+      if (err) {
+        console.error('Error closing MySQL connection: ' + err.stack);
+        return;
+      }
+      console.log('MySQL connection closed.');
+    });
+    
   } catch (error) {
     console.error("Error sending GET request:", error);
   }

@@ -297,7 +297,22 @@ const GetPaymentURLArca = async (req, res) => {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
     paymentResponse = await paymentResponse.json();
-
+  
+    let phone = User.phoneNumber.replace("0", "374");
+    const isRequest = await PaymentStatusOne.findOne({
+      where: {
+        phoneNumber: phone,
+        requestId: paymentResponse.id,
+        station
+      },
+    });
+    if (!isRequest) {
+      await PaymentStatusOne.create({
+        phoneNumber: phone,
+        requestId: paymentResponse.id,
+        station
+      });
+    }
     return res.json(paymentResponse);
   } catch (error) {
     console.log(error);
@@ -607,6 +622,7 @@ const checkTelcellPayments = async (req, res) => {
     })
   );
 };
+
 module.exports = {
   GetStatons,
   GetServicesForPay,
