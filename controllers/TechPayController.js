@@ -305,7 +305,7 @@ const GetPaymentURLArca = async (req, res) => {
     if (!isRequest) {
       await PaymentStatusOne.create({
         phoneNumber: phone,
-        requestId: paymentResponse.id,
+        requestId: paymentResponse.order.id,
         station
       });
     }
