@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const { calculateDistance } = require("./lib");
 const { Cars } = require("../models");
 const { Users } = require("../models");
-const { SubscribtionPayment } = require("../models");
+const { SubscribtionPayment,PaymentStatusOne } = require("../models");
 const { createClient, setex } = require("redis");
 var CryptoJS = require("crypto-js");
 const { Op } = require("sequelize");
@@ -313,6 +313,7 @@ const GetPaymentURLArca = async (req, res) => {
         station
       });
     }
+    console.log(paymentResponse,phone,paymentResponse.id,station);
     return res.json(paymentResponse);
   } catch (error) {
     console.log(error);
