@@ -287,18 +287,14 @@ const GetPaymentURLArca = async (req, res) => {
         }),
       }
     );
-    console.log(
-      User.Cars[0].serviceRequestId,
-      station,
-      User.Cars[0].vehicleTypeEn,
-      services
-    );
+
     if (!paymentResponse.ok) {
       return res.status(500).json({ error: "Failed to fetch car data" });
     }
     paymentResponse = await paymentResponse.json();
-  
+    
     let phone = User.phoneNumber.replace("0", "374");
+    console.log(paymentResponse,phone,paymentResponse.order.id,station);
     const isRequest = await PaymentStatusOne.findOne({
       where: {
         phoneNumber: phone,
@@ -313,10 +309,9 @@ const GetPaymentURLArca = async (req, res) => {
         station
       });
     }
-    console.log(paymentResponse,phone,paymentResponse.id,station);
     return res.json(paymentResponse);
   } catch (error) {
-    console.log(error);
+    console.log(error); 
     return res.status(500).json({ message: "Something went wrong." });
   }
 };
