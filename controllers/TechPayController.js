@@ -294,8 +294,7 @@ const GetPaymentURLArca = async (req, res) => {
     paymentResponse = await paymentResponse.json();
     
     let phone = User.phoneNumber.replace("0", "374");
-    if(paymentResponse){
-
+    if(paymentResponse.order){
       const isRequest = await PaymentStatusOne.findOne({
         where: {
           phoneNumber: phone,
