@@ -152,13 +152,6 @@ const sendPaymentMessage = async () => {
     }
     const db = admin.database();
     const rootRef = db.ref();
-
-    const connection = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      database: "onepay",
-      password: process.env.MYSQL_PASSWORD,
-    });
     const requests = await Users.findAll({
       include: {
         model: PaymentStatusOne,
@@ -310,19 +303,26 @@ const sendPaymentMessage = async () => {
         })
       );
     }
-    connection.end((err) => {
-      if (err) {
-        console.error('Error closing MySQL connection: ' + err.stack);
-        return;
-      }
-      console.log('MySQL connection closed.');
-    });
     
   } catch (error) {
     console.error("Error sending GET request:", error);
   }
 };
 
+const test = async () => {
+  const requests = await Users.findAll({
+    include: {
+      model: PaymentStatusOne, 
+        },
+    attributes: ["id", "deviceToken"],
+    where: {
+      "$PaymentStatusOnes.id$": { [Sequelize.Op.ne]: null }, // Corrected model name
+    },
+  });
+  console.log(requests[0].PaymentStatusOnes.id);
+};
+
+test()
 module.exports = {
   sendSMSCode,
   calculateDistance,
