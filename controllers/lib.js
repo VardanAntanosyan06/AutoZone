@@ -309,7 +309,6 @@ const sendPaymentMessage = async () => {
   }
 };
 
-
 module.exports = {
   sendSMSCode,
   calculateDistance,

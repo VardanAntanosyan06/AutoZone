@@ -3,7 +3,7 @@
     "username": "postgres",
     "password": "vv",
     "database": "AutoZone",
-    "host": "127.0.0.1",
+    "host": "161.97.129.124",
     "dialect": "postgres"
   },
   "test": {   
