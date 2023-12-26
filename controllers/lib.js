@@ -309,20 +309,7 @@ const sendPaymentMessage = async () => {
   }
 };
 
-const test = async () => {
-  const requests = await Users.findAll({
-    include: {
-      model: PaymentStatusOne, 
-        },
-    attributes: ["id", "deviceToken"],
-    where: {
-      "$PaymentStatusOnes.id$": { [Sequelize.Op.ne]: null }, // Corrected model name
-    },
-  });
-  console.log(requests[0].PaymentStatusOnes.id);
-};
 
-test()
 module.exports = {
   sendSMSCode,
   calculateDistance,
